@@ -700,10 +700,7 @@
         // --- 2. FIREBASE REALTIME LISTENERS (ĐÃ CẬP NHẬT) ---
 
         // Khởi tạo các tài khoản mặc định nếu chưa có
-        function initializeDefaultAccounts()
-        // DÒNG CODE CẦN THÊM VÀ CHỈ DÙNG 1 LẦN ĐỂ XÓA DỮ LIỆU SAI
-firebase.database().ref('admin').remove(); 
-// -------------------------------------------------------- {
+        function initializeDefaultAccounts(){
             const defaultAccounts = {
                 'admin': { password: '123', role: 'admin' },
                 'user': { password: '123', role: 'user' }
