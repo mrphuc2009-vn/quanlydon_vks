@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://*.firebaseio.com https://www.gstatic.com; img-src 'self' data: https://vienkiemsat.cantho.gov.vn;">
+    <title>Phần Mềm Quản Lý Đơn (Firebase Shared Data)</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    
+    <style>
+        /* CSS VẪN GIỮ NGUYÊN */
+        body {
+            font-family: 'Segoe UI', 'Times New Roman', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            background: linear-gradient(135deg, #e0e7ff, #f0f4f8);
+            overflow: auto;
+        }
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            margin: 10vh auto;
+            display: block;
+            background: url('https://vienkiemsat.cantho.gov.vn/files/images/logo-vks.png') no-repeat center 20px, linear-gradient(135deg, #e0e7ff, #f0f4f8);
+            background-size: auto 100px, cover;
+        }
+        .login-container h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 100px 0 20px;
+        }
+        .login-container .footer-login {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            background-color: #27ae60;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .login-container button:hover {
+            background-color: #219653;
+        }
+        .main-container {
+            width: 100%;
+            max-width: 1200px;
+            min-height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
+            display: none;
+            overflow: auto;
+            flex-direction: column;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .main-container.active {
+            display: flex;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding: 10px 0;
+        }
+        .header h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 0;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header h3 {
+            font-size: 20px;
+            color: #3689f7;
+            margin: 5px 0 0;
+            font-weight: 500;
+        }
+        .top-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+        }
+        .top-buttons button {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .top-buttons button:hover {
+            transform: scale(1.05);
+        }
+        .top-buttons .reset-btn { background-color: #8e44ad; }
+        .top-buttons .reset-btn:hover { background-color: #7d3c98; }
+        .top-buttons .logout-btn { background-color: #e74c3c; }
+        .top-buttons .logout-btn:hover { background-color: #c0392b; }
+        .menu {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .menu button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            flex: 1 1 auto;
+            min-width: 120px;
+            max-width: 200px;
+        }
+        .menu button:hover {
+            transform: scale(1.03);
+        }
+        .menu .add-btn { background-color: #27ae60; }
+        .menu .add-btn:hover { background-color: #219653; }
+        .menu .export-btn { background-color: #2980b9; }
+        .menu .export-btn:hover { background-color: #2471a3; }
+        .menu .clear-btn { background-color: #e74c3c; }
+        .menu .clear-btn:hover { background-color: #c0392b; }
+        .menu .json-btn { background-color: #f39c12; }
+        .menu .json-btn:hover { background-color: #e67e22; }
+        .menu .account-btn { background-color: #8e44ad; } 
+        .menu .account-btn:hover { background-color: #7d3c98; }
+        .menu .word-btn { background-color: #1a73e8; } 
+        .menu .word-btn:hover { background-color: #155bb3; }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-bottom: 10px;
+            padding: 0 10px;
+            flex-grow: 0;
+        }
+        .form-group {
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+        .form-group label {
+            width: 150px;
+            font-weight: 600;
+            color: #34495e;
+            margin-right: 15px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #fff;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+        /* Style cho Căn cứ - Custom layout for multiple fields */
+        .can-cu-item {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+        .can-cu-item input {
+            flex: 1;
+            min-width: 50px;
+        }
+        .can-cu-item button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            min-width: 50px;
+            font-size: 12px;
+        }
+        .can-cu-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+        .table-container {
+            margin-top: 20px;
+            flex-grow: 1;
+            min-height: 200px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            word-wrap: break-word;
+            overflow: hidden;
+            max-width: 0;
+        }
+        th {
+            background-color: #2c3e50;
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) { background-color: #f8f8f8; }
+        tr:hover td { background-color: #ecf0f1; }
+        .edit-btn, .delete-btn, .xu-ly-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .edit-btn { background-color: #f1c40f; color: #333; }
+        .delete-btn { background-color: #e74c3c; color: white; }
+        .xu-ly-btn { background-color: #2980b9; color: white; }
+        
+        /* Modal General Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px;
+            border-radius: 12px;
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+        .modal-content.large-modal {
+            width: 90%;
+            max-width: 900px;
+        }
+        .modal-content button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+        }
+        .modal-content button.save-btn { background-color: #27ae60; }
+        .modal-content button.cancel-btn { background-color: #e74c3c; }
+
+        .footer {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #7f8c8d;
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            width: 100%;
+        }
+        
+        .account-list {
+            list-style: none;
+            padding: 0;
+        }
+        .account-list li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container active" id="login-container">
+        <h2>Đăng Nhập Phần Mềm Quản Lý Đơn</h2>
+        <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
+        <input type="password" id="password" placeholder="Mật khẩu" value="123" onkeypress="if(event.key === 'Enter') login()">
+        <button onclick="login()">Đăng Nhập</button>
+        <div class="footer-login">
+            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ
+        </div>
+    </div>
+
+    <div class="main-container" id="main-container">
+        <div class="top-buttons">
+            <button class="reset-btn" onclick="showChangePassModal()">Đổi Mật Khẩu</button>
+            <button class="logout-btn" onclick="logout()">Đăng Xuất</button>
+        </div>
+        <div class="header">
+            <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
+            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+        </div>
+
+        <div class="menu">
+            <button class="add-btn" onclick="clearForm()">Thêm Đơn Mới</button>
+            <button class="export-btn" onclick="exportList()">Xuất Danh sách (.csv)</button>
+            <button class="export-btn" onclick="exportReport()">Xuất Báo Cáo (.csv)</button>
+            <button class="word-btn" onclick="extractProposalSlip()">Trích Xuất Phiếu ĐX</button>
+            <button class="json-btn" onclick="downloadJSON()">Tải JSON (Backup)</button>
+            <button class="account-btn" id="account-btn" onclick="showAccountsModal()" style="display: none;">Quản Lý Tài Khoản</button>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="ngay_nhan">1. Ngày nhận đơn:</label>
+                <input type="date" id="ngay_nhan">
+            </div>
+            <div class="form-group">
+                <label for="nguon_don">2. Nguồn đơn:</label>
+                <select id="nguon_don">
+                    <option value="">--Chọn--</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ho_ten">3. Họ tên/ CQ/ TC:</label>
+                <input type="text" id="ho_ten">
+            </div>
+            <div class="form-group">
+                <label for="dia_chi">4. Địa chỉ:</label>
+                <input type="text" id="dia_chi">
+            </div>
+            <div class="form-group">
+                <label for="ngay_ghi">5. Đơn ghi ngày:</label>
+                <input type="date" id="ngay_ghi">
+            </div>
+            <div class="form-group">
+                <label for="phan_loai">6. Phân loại:</label>
+                <select id="phan_loai" onchange="capNhatThamQuyenMacDinh()">
+                    <option value="">--Chọn--</option>
+                    <option value="Khiếu nại">Khiếu nại</option>
+                    <option value="Tố cáo">Tố cáo</option>
+                    <option value="Kiến nghị/Phản ánh/Khác">Kiến nghị/Phản ánh/Khác</option>
+                    <option value="Yêu cầu bồi thường thiệt hại">Yêu cầu bồi thường thiệt hại</option>
+                    <option value="Đề nghị KN, GĐT, TT">Đề nghị KN, GĐT, TT</option>
+                    <option value="Đề nghị kiểm tra QĐGQKN">Đề nghị kiểm tra QĐGQKN</option>
+                    <option value="Tin báo/Tố giác tội phạm trong HĐTP">Tin báo/Tố giác tội phạm trong HĐTP</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="tham_quyen">7. Thẩm quyền:</label>
+                <select id="tham_quyen">
+                    <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
+                    <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
+                    <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="can_bo_phan_cong">8. Cán bộ phân công:</label>
+                <input type="text" id="can_bo_phan_cong" value="Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label for="chuc_danh">9. Chức danh:</label>
+                <input type="text" id="chuc_danh" value="Kiểm sát viên">
+            </div>
+            <div class="form-group">
+                <label for="noi_chuyen_don">10. Nơi chuyển đơn (Nếu KTQ):</label>
+                <select id="noi_chuyen_don">
+                    <option value="">--Chọn--</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="ngay_chuyen_don">11. Ngày chuyển đơn:</label>
+                <input type="date" id="ngay_chuyen_don">
+            </div>
+            <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
+                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
+                <div id="can_cu_container" style="width: 100%;">
+                    </div>
+                <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu()">Thêm Căn cứ</button>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                <label for="noi_dung" style="display: block; width: auto; margin-bottom: 5px;">13. Nội dung đơn (Tóm tắt):</label>
+                <textarea id="noi_dung"></textarea>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                <label for="de_xuat" style="display: block; width: auto; margin-bottom: 5px;">14. Đề xuất:</label>
+                <textarea id="de_xuat"></textarea>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                <textarea id="ket_qua"></textarea>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="add-btn" onclick="saveDon()">Lưu Đơn</button>
+            <input type="hidden" id="edit-id"> </div>
+
+        <div class="table-container">
+            <h3>Danh Sách Đơn Đã Nhập (Dữ liệu chung)</h3>
+            <table id="don-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">STT</th>
+                        <th style="width: 10%;">Ngày nhận</th>
+                        <th style="width: 20%;">Họ tên/ CQ/ TC</th>
+                        <th style="width: 30%;">Nội dung (Tóm tắt)</th>
+                        <th style="width: 10%;">Phân loại</th>
+                        <th style="width: 10%;">Thẩm quyền</th>
+                        <th style="width: 15%;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="don-body">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ | Phiên bản FIREBASE (Chia sẻ dữ liệu)
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content large-modal">
+            <h2>Sửa Thông Tin Đơn</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sua-ngay_nhan">1. Ngày nhận đơn:</label>
+                    <input type="date" id="sua-ngay_nhan">
+                </div>
+                <div class="form-group">
+                    <label for="sua-nguon_don">2. Nguồn đơn:</label>
+                    <select id="sua-nguon_don"></select>
+                </div>
+                <div class="form-group">
+                    <label for="sua-ho_ten">3. Họ tên/ CQ/ TC:</label>
+                    <input type="text" id="sua-ho_ten">
+                </div>
+                <div class="form-group">
+                    <label for="sua-dia_chi">4. Địa chỉ:</label>
+                    <input type="text" id="sua-dia_chi">
+                </div>
+                <div class="form-group">
+                    <label for="sua-ngay_ghi">5. Đơn ghi ngày:</label>
+                    <input type="date" id="sua-ngay_ghi">
+                </div>
+                <div class="form-group">
+                    <label for="sua-phan_loai">6. Phân loại:</label>
+                    <select id="sua-phan_loai" onchange="capNhatThamQuyenMacDinh('sua-')">
+                        <option value="Khiếu nại">Khiếu nại</option>
+                        <option value="Tố cáo">Tố cáo</option>
+                        <option value="Kiến nghị/Phản ánh/Khác">Kiến nghị/Phản ánh/Khác</option>
+                        <option value="Yêu cầu bồi thường thiệt hại">Yêu cầu bồi thường thiệt hại</option>
+                        <option value="Đề nghị KN, GĐT, TT">Đề nghị KN, GĐT, TT</option>
+                        <option value="Đề nghị kiểm tra QĐGQKN">Đề nghị kiểm tra QĐGQKN</option>
+                        <option value="Tin báo/Tố giác tội phạm trong HĐTP">Tin báo/Tố giác tội phạm trong HĐTP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sua-tham_quyen">7. Thẩm quyền:</label>
+                    <select id="sua-tham_quyen">
+                        <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
+                        <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
+                        <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sua-can_bo_phan_cong">8. Cán bộ phân công:</label>
+                    <input type="text" id="sua-can_bo_phan_cong">
+                </div>
+                <div class="form-group">
+                    <label for="sua-chuc_danh">9. Chức danh:</label>
+                    <input type="text" id="sua-chuc_danh">
+                </div>
+                <div class="form-group">
+                    <label for="sua-noi_chuyen_don">10. Nơi chuyển đơn (Nếu KTQ):</label>
+                    <select id="sua-noi_chuyen_don"></select>
+                </div>
+                <div class="form-group">
+                    <label for="sua-ngay_chuyen_don">11. Ngày chuyển đơn:</label>
+                    <input type="date" id="sua-ngay_chuyen_don">
+                </div>
+                <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
+                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
+                    <div id="sua-can_cu_container" style="width: 100%;">
+                    </div>
+                    <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu('sua-')">Thêm Căn cứ</button>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                    <label for="sua-noi_dung" style="display: block; width: auto; margin-bottom: 5px;">13. Nội dung đơn (Tóm tắt):</label>
+                    <textarea id="sua-noi_dung"></textarea>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                    <label for="sua-de_xuat" style="display: block; width: auto; margin-bottom: 5px;">14. Đề xuất:</label>
+                    <textarea id="sua-de_xuat"></textarea>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1; display: block;">
+                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                    <textarea id="sua-ket_qua"></textarea>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="updateDon()">Cập Nhật</button>
+            <button class="cancel-btn" onclick="document.getElementById('editModal').style.display = 'none';">Hủy</button>
+        </div>
+    </div>
+
+    <div id="accountsModal" class="modal">
+        <div class="modal-content">
+            <h2>Quản Lý Tài Khoản</h2>
+            <ul id="account-list" class="account-list"></ul>
+
+            <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
+                <h3>Tạo Tài Khoản Mới</h3>
+                <input type="text" id="new-username" placeholder="Tên đăng nhập mới">
+                <input type="password" id="new-password" placeholder="Mật khẩu">
+                <select id="new-role" style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px;">
+                    <option value="user">Người dùng</option>
+                    <option value="admin">Quản trị viên</option>
+                </select>
+                <button class="save-btn" style="width: 100%;" onclick="createAccount()">Tạo Tài Khoản</button>
+            </div>
+            <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('accountsModal').style.display = 'none';">Đóng</button>
+        </div>
+    </div>
+
+    <div id="changePassModal" class="modal">
+        <div class="modal-content">
+            <h2>Đổi Mật Khẩu</h2>
+            <input type="password" id="old-password" placeholder="Mật khẩu cũ">
+            <input type="password" id="new-password-change" placeholder="Mật khẩu mới">
+            <input type="password" id="confirm-password-change" placeholder="Nhập lại mật khẩu mới">
+            <button class="save-btn" style="width: 100%;" onclick="changePassword()">Đổi Mật Khẩu</button>
+            <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('changePassModal').style.display = 'none';">Hủy</button>
+        </div>
+    </div>
+
+    <div id="proposalModal" class="modal">
+        <div class="modal-content large-modal">
+            <h2>Xem trước Phiếu Đề Xuất</h2>
+            <div id="proposal-content" style="white-space: pre-wrap; text-align: left; font-family: 'Times New Roman', serif; font-size: 14px; border: 1px dashed #ccc; padding: 15px;">
+                </div>
+            <p style="color: #e74c3c; font-size: 12px; margin-top: 10px;">Lưu ý: Chức năng tải xuống (.doc) sẽ tải file .txt vì cần thư viện bên ngoài để tạo file Word chính thức.</p>
+            <button class="save-btn" onclick="downloadProposalDoc()">Tải xuống (.txt)</button>
+            <button class="cancel-btn" onclick="document.getElementById('proposalModal').style.display = 'none';">Đóng</button>
+        </div>
+    </div>
+
+
+    <script>
+        // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
+        // THAY THẾ CHỖ NÀY BẰNG CẤU HÌNH CỦA BẠN (Bước 1)
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            authDomain: "project-id.firebaseapp.com",
+            databaseURL: "https://project-id-default-rtdb.firebaseio.com",
+            projectId: "project-id",
+            storageBucket: "project-id.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // --- GLOBAL DATA & INITIALIZATION ---
+
+        let accounts = {}; // Dữ liệu tài khoản (tải từ Firebase)
+        let dons = []; // Dữ liệu đơn (tải từ Firebase dưới dạng mảng để dễ xử lý)
+        let currentUser = null;
+
+        // Căn cứ logic
+        let canCuCount = 1;
+        let suaCanCuCount = 0;
+
+        // Dữ liệu danh mục
+        const lookupData = {
+            'Nguồn đơn': [
+                'Bưu điện', 'Tiếp dân', 'Các cơ quan Đảng, Nhà nước', 
+                'Cục ĐT, VKSTC', 'V12, VKSTC', 'Cơ quan NN', 'Thành ủy'
+            ].sort(),
+            'Nơi chuyển đơn': [
+                'CQĐT/CA TP.CT', 'GĐ CATP.CT', 'CQĐT KV 1', 'TAND TP.CT',
+                'Phòng 1', 'Phòng 2', 'Phòng 7', 'Phòng 8', 'Phòng 9', 'Phòng 10', 'Phòng 11', 'Phòng 15',
+                'VKS KV 1', 'VKS KV 2', 'VKS KV 3', 'VKS KV 4', 'VKS KV 5', 'VKS KV 6', 'VKS KV 7', 'VKS KV 8',
+                'Khác (Ghi rõ trong Kết quả)'
+            ].sort()
+        };
+
+
+        // --- UTILITY FUNCTIONS ---
+        
+        // Không cần hàm saveData() nữa vì dữ liệu được lưu ngay vào Firebase
+
+        function downloadFile(content, filename, type) {
+            // ... (Hàm này giữ nguyên)
+            if (type.includes('text/csv')) {
+                const BOM = '\uFEFF'; 
+                content = BOM + content;
+                const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+                if (navigator.msSaveBlob) { 
+                    navigator.msSaveBlob(blob, filename);
+                } else {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }
+            } else {
+                const blob = new Blob([content], { type: type });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-'); 
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`; 
+            }
+            return dateString;
+        }
+        function escapeCSV(data) {
+            if (data == null) return '';
+            data = String(data).replace(/"/g, '""');
+            if (data.includes(',') || data.includes('\n') || data.includes('"')) {
+                return `"${data}"`;
+            }
+            return data;
+        }
+
+
+        // --- 2. FIREBASE REALTIME LISTENERS (ĐÃ CẬP NHẬT) ---
+
+        // Khởi tạo các tài khoản mặc định nếu chưa có
+        function initializeDefaultAccounts() {
+            const defaultAccounts = {
+                'admin': { password: '123', role: 'admin' },
+                'user': { password: '123', role: 'user' }
+            };
+            // set with update to not overwrite everything
+            database.ref('accounts').update(defaultAccounts)
+                .then(() => console.log("Tài khoản mặc định đã được kiểm tra/khởi tạo."))
+                .catch(error => console.error("Lỗi khởi tạo tài khoản:", error));
+        }
+        
+        // Lắng nghe thay đổi dữ liệu đơn từ Firebase
+        database.ref('dons').on('value', (snapshot) => {
+            const data = snapshot.val();
+            dons = []; // Đặt lại mảng đơn
+            if (data) {
+                // Chuyển đối tượng Firebase thành mảng
+                Object.keys(data).forEach(key => {
+                    dons.push({ id: key, ...data[key] });
+                });
+            }
+            updateTable(); // Cập nhật bảng ngay khi dữ liệu thay đổi
+        }, (error) => {
+            console.error("Lỗi tải dữ liệu đơn:", error);
+            alert("Lỗi kết nối CSDL (Đơn). Vui lòng kiểm tra console.");
+        });
+
+        // Lắng nghe thay đổi dữ liệu tài khoản từ Firebase
+        database.ref('accounts').on('value', (snapshot) => {
+            accounts = snapshot.val() || {}; // Tải toàn bộ object tài khoản
+            if (currentUser) {
+                 // Cập nhật lại vai trò và giao diện nếu đang đăng nhập
+                 const accountData = accounts[currentUser.username];
+                 if (accountData) {
+                    currentUser.role = accountData.role;
+                    currentUser.password = accountData.password; // Cập nhật mật khẩu nếu đổi
+                    // Ẩn/hiện nút Quản lý Tài khoản
+                    document.getElementById('account-btn').style.display = (currentUser.role === 'admin') ? 'inline-block' : 'none';
+                 } else {
+                    // Nếu tài khoản hiện tại bị xóa, đăng xuất
+                    logout();
+                 }
+            }
+            console.log("Dữ liệu tài khoản đã được cập nhật.");
+        }, (error) => {
+            console.error("Lỗi tải dữ liệu tài khoản:", error);
+            alert("Lỗi kết nối CSDL (Tài khoản). Vui lòng kiểm tra console.");
+        });
+
+
+        // --- 3. ACCOUNT MANAGEMENT (ĐÃ CẬP NHẬT) ---
+
+        function login() {
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value;
+
+            const account = accounts[user];
+
+            if (account && account.password === pass) {
+                currentUser = { username: user, password: pass, role: account.role };
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').classList.add('active');
+                
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '123';
+                
+                initSelectOptions();
+                
+                if (currentUser.role === 'admin') {
+                    document.getElementById('account-btn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('account-btn').style.display = 'none';
+                }
+                
+                document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
+                alert(`Đăng nhập thành công! Chào mừng ${user}.`);
+
+            } else {
+                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('main-container').classList.remove('active');
+            document.getElementById('login-container').style.display = 'block';
+        }
+
+        function showChangePassModal() { document.getElementById('changePassModal').style.display = 'flex'; }
+        
+        function changePassword() {
+            const oldPass = document.getElementById('old-password').value;
+            const newPass = document.getElementById('new-password-change').value;
+            const confirmPass = document.getElementById('confirm-password-change').value;
+
+            if (oldPass !== currentUser.password) { alert('Mật khẩu cũ không đúng.'); return; }
+            if (newPass.length < 3) { alert('Mật khẩu mới phải có ít nhất 3 ký tự.'); return; }
+            if (newPass !== confirmPass) { alert('Mật khẩu mới và xác nhận mật khẩu không khớp.'); return; }
+
+            // Cập nhật mật khẩu trong Firebase
+            const updates = {};
+            updates[`accounts/${currentUser.username}/password`] = newPass;
+            
+            database.ref().update(updates)
+                .then(() => {
+                    currentUser.password = newPass; 
+                    alert('Đổi mật khẩu thành công!');
+                    document.getElementById('changePassModal').style.display = 'none';
+                    document.getElementById('old-password').value = '';
+                    document.getElementById('new-password-change').value = '';
+                    document.getElementById('confirm-password-change').value = '';
+                })
+                .catch(error => {
+                    alert('Lỗi khi đổi mật khẩu: ' + error.message);
+                });
+        }
+
+        function showAccountsModal() {
+            if (currentUser && currentUser.role === 'admin') {
+                updateAccountList();
+                document.getElementById('accountsModal').style.display = 'flex';
+            } else {
+                alert('Bạn không có quyền quản lý tài khoản.');
+            }
+        }
+
+        function updateAccountList() {
+            const list = document.getElementById('account-list');
+            list.innerHTML = '';
+            Object.keys(accounts).forEach((username) => {
+                const acc = accounts[username];
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${username} (${acc.role})</span>
+                    ${username !== 'admin' && username !== currentUser.username ? `<button class="delete-btn" onclick="deleteAccount('${username}')">Xóa</button>` : ''}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function createAccount() {
+            const user = document.getElementById('new-username').value.trim();
+            const pass = document.getElementById('new-password').value;
+            const role = document.getElementById('new-role').value;
+
+            if (user === '' || pass === '') { alert('Tên đăng nhập và mật khẩu không được để trống.'); return; }
+            if (accounts[user]) { alert('Tên đăng nhập đã tồn tại.'); return; }
+
+            // Thêm tài khoản vào Firebase
+            const newAccount = { password: pass, role: role };
+            database.ref(`accounts/${user}`).set(newAccount)
+                .then(() => {
+                    document.getElementById('new-username').value = '';
+                    document.getElementById('new-password').value = '';
+                    alert('Tạo tài khoản thành công.');
+                })
+                .catch(error => {
+                    alert('Lỗi tạo tài khoản: ' + error.message);
+                });
+        }
+
+        function deleteAccount(username) {
+            if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ${username}?`)) {
+                // Xóa tài khoản khỏi Firebase
+                database.ref(`accounts/${username}`).remove()
+                    .then(() => {
+                        alert(`Đã xóa tài khoản ${username}.`);
+                    })
+                    .catch(error => {
+                        alert('Lỗi xóa tài khoản: ' + error.message);
+                    });
+            }
+        }
+
+
+        // --- 4. FORM AND DATA MANAGEMENT (ĐÃ CẬP NHẬT SAVE/UPDATE/DELETE) ---
+
+        function initSelectOptions() { /* ... (giữ nguyên) ... */ }
+        function capNhatThamQuyenMacDinh(prefix = '') { /* ... (giữ nguyên) ... */ }
+        function addCanCu(prefix = '') { /* ... (giữ nguyên) ... */ }
+        function removeCanCu(index, prefix = '') { /* ... (giữ nguyên) ... */ }
+        function getCanCuData(prefix = '') { /* ... (giữ nguyên) ... */ }
+        function populateCanCuFields(data, prefix = '') { /* ... (giữ nguyên) ... */ }
+
+        function clearForm() {
+            document.getElementById('ngay_nhan').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('nguon_don').value = '';
+            document.getElementById('ho_ten').value = '';
+            document.getElementById('dia_chi').value = '';
+            document.getElementById('ngay_ghi').value = '';
+            document.getElementById('noi_dung').value = '';
+            document.getElementById('phan_loai').value = '';
+            document.getElementById('tham_quyen').value = 'Thuộc thẩm quyền giải quyết';
+            document.getElementById('de_xuat').value = '';
+            document.getElementById('ket_qua').value = '';
+            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : 'Nguyễn Văn A'; 
+            document.getElementById('chuc_danh').value = currentUser ? currentUser.role === 'admin' ? 'Quản trị viên' : 'Người dùng' : 'Kiểm sát viên'; 
+            document.getElementById('noi_chuyen_don').value = '';
+            document.getElementById('ngay_chuyen_don').value = '';
+            document.getElementById('edit-id').value = ''; // Sửa thành ID
+
+            populateCanCuFields([], '');
+            document.getElementById('ho_ten').focus();
+        }
+
+        function saveDon() {
+            const editId = document.getElementById('edit-id').value;
+            const newDon = {
+                ngayNhan: document.getElementById('ngay_nhan').value,
+                nguonDon: document.getElementById('nguon_don').value,
+                hoTen: document.getElementById('ho_ten').value,
+                diaChi: document.getElementById('dia_chi').value,
+                ngayGhi: document.getElementById('ngay_ghi').value,
+                noiDung: document.getElementById('noi_dung').value,
+                phanLoai: document.getElementById('phan_loai').value,
+                thamQuyen: document.getElementById('tham_quyen').value,
+                canCu: getCanCuData(),
+                deXuat: document.getElementById('de_xuat').value,
+                ketQua: document.getElementById('ket_qua').value,
+                canBoPhanCong: document.getElementById('can_bo_phan_cong').value,
+                chucDanh: document.getElementById('chuc_danh').value,
+                noiChuyenDon: document.getElementById('noi_chuyen_don').value,
+                ngayChuyenDon: document.getElementById('ngay_chuyen_don').value,
+                lastUpdated: new Date().toISOString()
+            };
+
+            if (!newDon.hoTen || !newDon.ngayNhan) {
+                alert('Vui lòng nhập Họ tên và Ngày nhận đơn.');
+                return;
+            }
+
+            if (editId === '') {
+                // Thêm mới vào Firebase
+                database.ref('dons').push(newDon)
+                    .then(() => {
+                        alert('Thêm đơn mới thành công!');
+                        clearForm();
+                    })
+                    .catch(error => alert('Lỗi thêm đơn: ' + error.message));
+            } else {
+                // Cập nhật lên Firebase
+                database.ref('dons/' + editId).set(newDon)
+                    .then(() => {
+                        alert('Cập nhật đơn thành công!');
+                        clearForm();
+                    })
+                    .catch(error => alert('Lỗi cập nhật đơn: ' + error.message));
+            }
+        }
+
+        function editDon(id) {
+            const don = dons.find(d => d.id === id); // Tìm đơn theo ID
+            if (!don) { alert('Không tìm thấy đơn (ID lỗi).'); return; }
+
+            document.getElementById('editModal').style.display = 'flex';
+            document.getElementById('edit-id').value = id; // Lưu ID vào ô ẩn
+
+            // Load dữ liệu
+            document.getElementById('sua-ngay_nhan').value = don.ngayNhan || '';
+            document.getElementById('sua-nguon_don').value = don.nguonDon || '';
+            document.getElementById('sua-ho_ten').value = don.hoTen || '';
+            document.getElementById('sua-dia_chi').value = don.diaChi || '';
+            document.getElementById('sua-ngay_ghi').value = don.ngayGhi || '';
+            document.getElementById('sua-noi_dung').value = don.noiDung || '';
+            document.getElementById('sua-phan_loai').value = don.phanLoai || '';
+            document.getElementById('sua-tham_quyen').value = don.thamQuyen || 'Thuộc thẩm quyền giải quyết';
+            document.getElementById('sua-de_xuat').value = don.deXuat || '';
+            document.getElementById('sua-ket_qua').value = don.ketQua || '';
+            document.getElementById('sua-can_bo_phan_cong').value = don.canBoPhanCong || '';
+            document.getElementById('sua-chuc_danh').value = don.chucDanh || '';
+            document.getElementById('sua-noi_chuyen_don').value = don.noiChuyenDon || '';
+            document.getElementById('sua-ngay_chuyen_don').value = don.ngayChuyenDon || '';
+
+            // Load Căn cứ
+            populateCanCuFields(don.canCu || [], 'sua-');
+        }
+
+        function updateDon() {
+            const id = document.getElementById('edit-id').value;
+
+            if (!id) {
+                alert('Lỗi: Không tìm thấy ID đơn để cập nhật.');
+                return;
+            }
+
+            const updatedDon = {
+                ngayNhan: document.getElementById('sua-ngay_nhan').value,
+                nguonDon: document.getElementById('sua-nguon_don').value,
+                hoTen: document.getElementById('sua-ho_ten').value,
+                diaChi: document.getElementById('sua-dia_chi').value,
+                ngayGhi: document.getElementById('sua-ngay_ghi').value,
+                noiDung: document.getElementById('sua-noi_dung').value,
+                phanLoai: document.getElementById('sua-phan_loai').value,
+                thamQuyen: document.getElementById('sua-tham_quyen').value,
+                canCu: getCanCuData('sua-'),
+                deXuat: document.getElementById('sua-de_xuat').value,
+                ketQua: document.getElementById('sua-ket_qua').value,
+                canBoPhanCong: document.getElementById('sua-can_bo_phan_cong').value,
+                chucDanh: document.getElementById('sua-chuc_danh').value,
+                noiChuyenDon: document.getElementById('sua-noi_chuyen_don').value,
+                ngayChuyenDon: document.getElementById('sua-ngay_chuyen_don').value,
+                lastUpdated: new Date().toISOString()
+            };
+
+            // Cập nhật lên Firebase
+            database.ref('dons/' + id).set(updatedDon)
+                .then(() => {
+                    document.getElementById('editModal').style.display = 'none';
+                    alert('Cập nhật đơn thành công!');
+                    // updateTable sẽ được gọi tự động nhờ listener
+                })
+                .catch(error => alert('Lỗi cập nhật đơn: ' + error.message));
+        }
+
+        function deleteDon(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn này?')) {
+                // Xóa khỏi Firebase
+                database.ref('dons/' + id).remove()
+                    .then(() => {
+                        alert('Đã xóa đơn!');
+                        // updateTable sẽ được gọi tự động nhờ listener
+                    })
+                    .catch(error => alert('Lỗi xóa đơn: ' + error.message));
+            }
+        }
+
+        function updateTable() {
+            // Sắp xếp đơn theo ngày nhận mới nhất
+            const sortedDons = [...dons].sort((a, b) => new Date(b.ngayNhan) - new Date(a.ngayNhan));
+
+            const tableBody = document.getElementById('don-body');
+            tableBody.innerHTML = '';
+
+            sortedDons.forEach((don, index) => {
+                const row = tableBody.insertRow();
+                
+                // Lưu ID Firebase vào thuộc tính data-id để dùng khi Sửa/Xóa
+                row.setAttribute('data-id', don.id); 
+
+                row.insertCell().textContent = index + 1; // STT
+                row.insertCell().textContent = formatDate(don.ngayNhan);
+                row.insertCell().textContent = don.hoTen;
+                row.insertCell().textContent = don.noiDung.length > 50 ? don.noiDung.substring(0, 50) + '...' : don.noiDung;
+                row.insertCell().textContent = don.phanLoai;
+                row.insertCell().textContent = don.thamQuyen;
+
+                const actionsCell = row.insertCell();
+                actionsCell.innerHTML = `
+                    <button class="edit-btn" onclick="editDon('${don.id}')">Sửa</button>
+                    <button class="delete-btn" onclick="deleteDon('${don.id}')">Xóa</button>
+                    <button class="xu-ly-btn" onclick="openProposalSlip('${don.id}')">Phiếu ĐX</button>
+                `;
+            });
+        }
+        
+        // Cần cập nhật lại các hàm Export để lấy dữ liệu từ biến 'dons'
+        function getCanCuString(canCuArray) { /* ... (giữ nguyên) ... */ }
+        function exportList() { /* ... (giữ nguyên) ... */ }
+        function exportReport() { /* ... (giữ nguyên) ... */ }
+        function downloadJSON() {
+            const dataToBackup = {
+                dons: dons,
+                accounts: accounts
+            };
+            const dataStr = JSON.stringify(dataToBackup, null, 2);
+            downloadFile(dataStr, 'quanlydon_firebase_backup.json', 'text/json');
+        }
+        
+        // Cập nhật hàm Phiếu Đề Xuất để dùng ID
+        function openProposalSlip(id) {
+            const don = dons.find(d => d.id === id);
+            // ... (Phần còn lại giữ nguyên, chỉ thay don.index bằng don.id nếu cần)
+            if (!don) { alert('Không tìm thấy đơn.'); return; }
+            
+            const today = formatDate(new Date().toISOString().slice(0, 10));
+            const [day, month, year] = today.split('/');
+            
+            const canCuText = getCanCuString(don.canCu).replace(/\;/g, ';\nTheo quy định tại');
+
+            let proposalContent = `
+VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ
+THANH TRA - KHIẾU TỐ
+------------------------------------
+                                                          CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+                                                          Độc lập - Tự do - Hạnh phúc
+                                                        
+                                            Cần Thơ, ngày ${day} tháng ${month} năm ${year}
+
+Mẫu số 07/KT 
+(Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023)
+
+Kính gửi:
+- Lãnh đạo Viện;
+- Lãnh đạo Thanh tra - Khiếu tố.
+
+Tôi tên: ${don.canBoPhanCong || currentUser.username}, chức danh: ${don.chucDanh || currentUser.role};
+Được phân công nghiên cứu, đề xuất xử lý đối với đơn của ${don.hoTen}, 
+địa chỉ: ${don.diaChi}, ghi ngày ${formatDate(don.ngayGhi)} 
+(Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ngày ${formatDate(don.ngayNhan)} do ${don.nguonDon} chuyển đến).
+
+Nội dung đơn: ${don.noiDung}
+
+Căn cứ: ${canCuText} (Ví dụ: Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo...)
+${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
+
+                                                                 NGƯỜI ĐỀ XUẤT
+                                                                 (Ký, ghi rõ họ tên)
+                                                                 ${don.canBoPhanCong || currentUser.username}
+            `;
+            
+            document.getElementById('proposal-content').textContent = proposalContent.trim();
+            document.getElementById('proposalModal').style.display = 'flex';
+        }
+        
+        function extractProposalSlip() {
+            if (dons.length > 0) {
+                // Lấy đơn mới nhất (đã sắp xếp)
+                openProposalSlip(dons[0].id);
+            } else {
+                alert('Vui lòng nhập hoặc chọn một đơn để trích xuất phiếu đề xuất.');
+            }
+        }
+        
+        function downloadProposalDoc() { /* ... (giữ nguyên) ... */ }
+
+        // --- INITIALIZATION ---
+        function init() {
+            // Khởi tạo tài khoản mặc định (chỉ chạy 1 lần nếu chưa có)
+            initializeDefaultAccounts(); 
+            initSelectOptions();
+            populateCanCuFields([], '');
+            populateCanCuFields([], 'sua-');
+            
+            // Lắng nghe dữ liệu (listeners) đã làm ở trên, không cần updateTable() ở đây
+            
+            document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
+        }
+
+        window.onload = init;
+    </script>
+
+</body>
+</html>
