@@ -837,35 +837,42 @@
                 });
         }
         
-        // START: THÊM HÀM XỬ LÝ QUÊN MẬT KHẨU
+       // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI TẢI DỮ LIỆU)
         function handleForgotPassword() {
-            // Đặt lại mật khẩu admin về giá trị mặc định đã biết
             const resetUsername = 'admin'; 
             const newPassword = 'admin1234'; // Mật khẩu mới sau khi reset
             
             if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
-                const accountsRef = firebase.database().ref('accounts').child(resetUsername);
                 
-                // Kiểm tra xem tài khoản admin có tồn tại không
-                if (!accounts[resetUsername]) {
-                    alert("Lỗi: Tài khoản 'admin' không tồn tại trong hệ thống.");
-                    return;
-                }
-                
-                accountsRef.update({ password: newPassword })
-                    .then(() => {
-                        alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng đăng nhập lại.`);
-                        // Đóng modal đăng nhập (nếu đang mở) để người dùng nhập mật khẩu mới
-                        document.getElementById('login-container').style.display = 'block';
-                        document.getElementById('username').value = resetUsername;
-                        document.getElementById('password').value = newPassword; // Gợi ý mật khẩu mới
+                // Lấy dữ liệu tài khoản trực tiếp từ Firebase (không dùng biến accounts đã tải)
+                firebase.database().ref('accounts').child(resetUsername).once('value')
+                    .then(snapshot => {
+                        if (!snapshot.exists()) {
+                            alert("Lỗi: Tài khoản 'admin' không tồn tại trong CSDL Firebase. Vui lòng kiểm tra lại cấu hình CSDL.");
+                            return;
+                        }
+                        
+                        const accountsRef = firebase.database().ref('accounts').child(resetUsername);
+                        
+                        accountsRef.update({ password: newPassword })
+                            .then(() => {
+                                alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng sử dụng mật khẩu này để đăng nhập.`);
+                                
+                                // Cập nhật giao diện đăng nhập
+                                document.getElementById('username').value = resetUsername;
+                                document.getElementById('password').value = newPassword;
+                                document.getElementById('loginModal').style.display = 'none'; // Đảm bảo modal được đóng/mở lại
+                            })
+                            .catch((error) => {
+                                alert("Lỗi khi đặt lại mật khẩu: " + error.message);
+                            });
                     })
-                    .catch((error) => {
-                        alert("Lỗi khi đặt lại mật khẩu: " + error.message);
+                    .catch(error => {
+                         alert("Lỗi tải dữ liệu tài khoản: " + error.message);
                     });
             }
         }
-        // END: THÊM HÀM XỬ LÝ QUÊN MẬT KHẨU
+        // END: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU
 
         function showAccountsModal() {
             if (currentUser && currentUser.role === 'admin') {
