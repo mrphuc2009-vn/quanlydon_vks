@@ -663,15 +663,19 @@
 
 
     <script>
-       const firebaseConfig = {
-  apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
-  authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
-  databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "quanlydonvks-d7ff9",
-  storageBucket: "quanlydonvks-d7ff9.firebasestorage.app",
-  messagingSenderId: "209768483000",
-  appId: "1:209768483000:web:1eb449ad41840e23334c4d"
-};
+        // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
+        // 🚨🚨🚨 VUI LÒNG THAY THẾ TOÀN BỘ PHẦN NÀY BẰNG CẤU HÌNH CỦA DỰ ÁN FIREBASE CỦA BẠN 🚨🚨🚨
+        // Nếu databaseURL sai, kết nối sẽ không bao giờ thành công.
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g", // THAY THẾ
+            authDomain: "quanlydonvks-d7ff9.firebaseapp.com", // THAY THẾ
+            databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app", // THAY THẾ
+            projectId: "quanlydonvks-d7ff9", // THAY THẾ
+            storageBucket: "quanlydonvks-d7ff9.firebasestorage.app", // THAY THẾ
+            messagingSenderId: "209768483000", // THAY THẾ
+            appId: "1:209768483000:web:1eb449ad41840e23334c4d" // THAY THẾ
+        };
+        // 🚨🚨🚨 HẾT PHẦN CẦN THAY THẾ 🚨🚨🚨
 
         // Khởi tạo Firebase
         firebase.initializeApp(firebaseConfig);
@@ -729,13 +733,15 @@
             // KHỞI TẠO TÀI KHOẢN MẶC ĐỊNH
             // Chỉ tạo tài khoản 'admin' nếu node 'accounts' chưa tồn tại hoặc rỗng
             database.ref('accounts').once('value', (snapshot) => {
-                if (!snapshot.exists()) {
+                if (!snapshot.exists() || Object.keys(snapshot.val() || {}).length === 0) {
                     console.log("Tạo tài khoản admin mặc định.");
                     database.ref('accounts/admin').set({
                         password: '123', 
                         role: 'admin',
                         level: LEVEL.CITY,
                         chucDanh: 'Kiểm sát viên trung cấp'
+                    }).catch(error => {
+                         console.error("LỖI CẤP PHÉP (Lỗi 0x02): Không thể tạo tài khoản mặc định. Vui lòng kiểm tra lại Database Rules.", error);
                     });
                 }
             });
@@ -755,7 +761,7 @@
             updateTable(); 
         }, (error) => {
             console.error("Lỗi tải dữ liệu đơn:", error);
-            // Alert nhẹ hơn vì lỗi này không ngăn đăng nhập
+            // Xảy ra lỗi ở đây, ứng dụng sẽ tiếp tục chạy nhưng dữ liệu sẽ trống.
         });
 
         // Lắng nghe thay đổi dữ liệu tài khoản từ Firebase
@@ -779,9 +785,9 @@
             console.log("Dữ liệu tài khoản đã được cập nhật.");
         }, (error) => {
             console.error("Lỗi tải dữ liệu tài khoản:", error);
-            // Xử lý lỗi kết nối CSDL (ĐẶC BIỆT QUAN TRỌNG VỚI TÀI KHOẢN)
-            // Nếu lỗi xảy ra, accounts có thể vẫn là null hoặc {} (tuỳ thuộc vào lỗi). 
-            // Quan trọng nhất là thông báo trong hàm login.
+            // Thêm log để biết lỗi gì
+            alert("LỖI CẤP PHÉP (Lỗi 0x03): Không thể tải dữ liệu tài khoản. Vui lòng kiểm tra Database Rules.");
+            accounts = {}; // Gán accounts = {} để thoát khỏi lỗi accounts === null
         });
 
 
@@ -792,12 +798,14 @@
             const pass = document.getElementById('password').value;
 
             // KIỂM TRA LỖI KHÔNG TẢI ĐƯỢC DỮ LIỆU TỪ FIREBASE
+            // Vẫn giữ kiểm tra này để đưa ra hướng dẫn cụ thể
             if (accounts === null || (typeof accounts === 'object' && Object.keys(accounts).length === 0)) {
                 alert(
                     'LỖI KẾT NỐI (0x01): Ứng dụng chưa tải được dữ liệu tài khoản từ CSDL Firebase.\n\n' +
-                    'Vui lòng kiểm tra 2 điểm:\n' +
-                    '1. **Cấu hình Firebase (Config):** Đảm bảo bạn đã thay thế TOÀN BỘ cấu hình trong file index.html.\n' +
-                    '2. **Quy tắc CSDL (Rules):** Đảm bảo bạn đã đặt quyền **".read": "true", ".write": "true"** cho Realtime Database trong Firebase Console.'
+                    'Vui lòng kiểm tra 3 điểm (Dữ liệu không tải được):\n' +
+                    '1. **Cấu hình Firebase (Config):** Đảm bảo bạn đã thay thế TOÀN BỘ cấu hình (đặc biệt là **databaseURL**) trong file index.html.\n' +
+                    '2. **Quy tắc CSDL (Rules):** Đảm bảo bạn đã đặt quyền **".read": "true", ".write": "true"** cho Realtime Database trong Firebase Console.\n' +
+                    '3. **Lỗi Trình duyệt (CSP):** Đảm bảo bạn đã thay thế thẻ meta CSP ở phần <head> để trình duyệt không chặn kết nối.'
                 );
                 return;
             }
@@ -874,7 +882,9 @@
 
         // --- INITIALIZATION ---
         function init() {
+            // Đảm bảo tạo tài khoản admin mặc định nếu CSDL rỗng
             initializeDefaultAccounts(); 
+            // Khởi tạo các ô select (chức danh, nguồn đơn)
             initSelectOptions();
             populateCanCuFields([], '');
             populateCanCuFields([], 'sua-');
