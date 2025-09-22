@@ -661,17 +661,27 @@
         </div>
     </div>
 
+
     <script>
-       const firebaseConfig = {
-            apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
-            authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
-            databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "quanlydonvks-d7ff9",
-            storageBucket: "quanlydonvks-d7ff9.firebasestorage.app",
-            messagingSenderId: "209768483000",
-            appId: "1:209768483000:web:1eb449ad41840e23334c4d"
+        // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
+        // 🚨🚨🚨 VUI LÒNG THAY THẾ TOÀN BỘ PHẦN NÀY BẰNG CẤU HÌNH CỦA DỰ ÁN FIREBASE CỦA BẠN 🚨🚨🚨
+        // Ví dụ: Đảm bảo "databaseURL" trỏ đến URL CSDL của bạn.
+        const firebaseConfig = {
+            apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g", // THAY THẾ
+            authDomain: "quanlydonvks-d7ff9.firebaseapp.com", // THAY THẾ
+            databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app", // THAY THẾ
+            projectId: "quanlydonvks-d7ff9", // THAY THẾ
+            storageBucket: "quanlydonvks-d7ff9.firebasestorage.app", // THAY THẾ
+            messagingSenderId: "209768483000", // THAY THẾ
+            appId: "1:209768483000:web:1eb449ad41840e23334c4d" // THAY THẾ
         };
-      // --- GLOBAL DATA & INITIALIZATION ---
+        // 🚨🚨🚨 HẾT PHẦN CẦN THAY THẾ 🚨🚨🚨
+
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // --- GLOBAL DATA & INITIALIZATION ---
 
         let accounts = null; // Khởi tạo là null để kiểm tra trạng thái tải
         let dons = []; 
@@ -719,10 +729,24 @@
 
         // --- 2. FIREBASE REALTIME LISTENERS (ĐÃ CẬP NHẬT) ---
 
-        function initializeDefaultAccounts(){ /* ... (giữ nguyên) ... */ }
+        function initializeDefaultAccounts() { 
+            // KHỞI TẠO TÀI KHOẢN MẶC ĐỊNH
+            // Chỉ tạo tài khoản 'admin' nếu node 'accounts' chưa tồn tại hoặc rỗng
+            database.ref('accounts').once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    console.log("Tạo tài khoản admin mặc định.");
+                    database.ref('accounts/admin').set({
+                        password: '123', 
+                        role: 'admin',
+                        level: LEVEL.CITY,
+                        chucDanh: 'Kiểm sát viên trung cấp'
+                    });
+                }
+            });
+        }
         
         // Lắng nghe thay đổi dữ liệu đơn từ Firebase
-        database.ref('dons').on('value', (snapshot) => { /* ... (giữ nguyên) ... */ 
+        database.ref('dons').on('value', (snapshot) => { 
             const data = snapshot.val();
             dons = []; 
             if (data) {
@@ -730,44 +754,55 @@
                     dons.push({ id: key, ...data[key] });
                 });
             }
+            // Sắp xếp ngược: đơn mới nhất lên đầu
+            dons.sort((a, b) => new Date(b.ngay_nhan) - new Date(a.ngay_nhan));
             updateTable(); 
         }, (error) => {
             console.error("Lỗi tải dữ liệu đơn:", error);
-            alert("Lỗi kết nối CSDL (Đơn). Vui lòng kiểm tra console.");
+            // Alert nhẹ hơn vì lỗi này không ngăn đăng nhập
         });
 
         // Lắng nghe thay đổi dữ liệu tài khoản từ Firebase
         database.ref('accounts').on('value', (snapshot) => {
-            accounts = snapshot.val() || {}; // Tải toàn bộ object tài khoản, nếu null thì là {}
-            if (currentUser) {
+            accounts = snapshot.val() || {}; 
+            
+            // Xử lý logic cập nhật currentUser nếu đang đăng nhập
+            if (currentUser && accounts[currentUser.username]) {
                  const accountData = accounts[currentUser.username];
-                 if (accountData) {
-                    currentUser.role = accountData.role;
-                    currentUser.password = accountData.password; 
-                    currentUser.level = accountData.level || LEVEL.CITY; 
-                    currentUser.chucDanh = accountData.chucDanh || 'Kiểm sát viên trung cấp'; 
-                    
-                    document.getElementById('account-btn').style.display = (currentUser.role === 'admin') ? 'inline-block' : 'none';
-                 } else {
-                    logout();
-                 }
+                 currentUser.role = accountData.role;
+                 currentUser.password = accountData.password; 
+                 currentUser.level = accountData.level || LEVEL.CITY; 
+                 currentUser.chucDanh = accountData.chucDanh || 'Kiểm sát viên trung cấp'; 
+                 
+                 document.getElementById('account-btn').style.display = (currentUser.role === 'admin') ? 'inline-block' : 'none';
+            } else if (currentUser && !accounts[currentUser.username]) {
+                // Nếu tài khoản bị xóa khi đang đăng nhập
+                logout();
+                alert("Tài khoản của bạn đã bị vô hiệu hóa hoặc xóa. Vui lòng liên hệ Admin.");
             }
             console.log("Dữ liệu tài khoản đã được cập nhật.");
         }, (error) => {
             console.error("Lỗi tải dữ liệu tài khoản:", error);
-            // Không hiển thị alert ở đây để không làm gián đoạn người dùng ngay lập tức
+            // Xử lý lỗi kết nối CSDL (ĐẶC BIỆT QUAN TRỌNG VỚI TÀI KHOẢN)
+            // Nếu lỗi xảy ra, accounts có thể vẫn là null hoặc {} (tuỳ thuộc vào lỗi). 
+            // Quan trọng nhất là thông báo trong hàm login.
         });
 
 
-        // --- 3. ACCOUNT MANAGEMENT (ĐÃ THÊM KIỂM TRA LỖI KẾT NỐI TRONG LOGIN) ---
+        // --- 3. ACCOUNT MANAGEMENT (ĐÃ THÊM KIỂM TRA LỖI KẾT NỐI RÕ RÀNG HƠN) ---
 
         function login() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
 
-            // KIỂM TRA KẾT NỐI FIREBASE
-            if (accounts === null || Object.keys(accounts).length === 0) {
-                alert('Lỗi: Ứng dụng chưa tải được dữ liệu tài khoản từ CSDL Firebase. Vui lòng kiểm tra 1) **Cấu hình Firebase** (apiKey, databaseURL) đã đúng chưa, hoặc 2) **Kết nối mạng** của bạn.');
+            // KIỂM TRA LỖI KHÔNG TẢI ĐƯỢC DỮ LIỆU TỪ FIREBASE
+            if (accounts === null || (typeof accounts === 'object' && Object.keys(accounts).length === 0)) {
+                alert(
+                    'LỖI KẾT NỐI (0x01): Ứng dụng chưa tải được dữ liệu tài khoản từ CSDL Firebase.\n\n' +
+                    'Vui lòng kiểm tra 2 điểm:\n' +
+                    '1. **Cấu hình Firebase (Config):** Đảm bảo bạn đã thay thế TOÀN BỘ cấu hình trong file index.html.\n' +
+                    '2. **Quy tắc CSDL (Rules):** Đảm bảo bạn đã đặt quyền **".read": "true", ".write": "true"** cho Realtime Database trong Firebase Console.'
+                );
                 return;
             }
             
