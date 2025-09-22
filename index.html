@@ -380,6 +380,7 @@
             width: 100%;
         }
         
+        /* Cập nhật style cho list tài khoản để hiển thị chi tiết hơn */
         .account-list {
             list-style: none;
             padding: 0;
@@ -390,6 +391,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; 
         }
     </style>
 </head>
@@ -416,7 +418,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO </h3>
         </div>
 
         <div class="menu">
@@ -494,7 +496,13 @@
             </div>
             <div class="form-group">
                 <label for="chuc_danh">9. Chức danh:</label>
-                <input type="text" id="chuc_danh" value="Kiểm sát viên">
+                 <select id="editChucDanh">
+                        <option value="">--Chọn--</option>
+                        <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
+                        <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
+                        <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
+                        <option value="Kiểm tra viên">Kiểm tra viên</option>
+                  </select>
             </div>
             <div class="form-group">
                 <label for="noi_chuyen_don">10. Nơi chuyển đơn (Nếu KTQ):</label>
@@ -640,9 +648,22 @@
     </div>
 
     <div id="accountsModal" class="modal">
-        <div class="modal-content">
-            <h2>Quản Lý Tài Khoản</h2>
-            <ul id="account-list" class="account-list"></ul>
+        <div class="modal-content large-modal" style="width: 600px; max-width: 90%;">
+            <h2>Quản Lý Tài Khoản (Dành cho Admin Cao Nhất)</h2>
+
+            <div style="text-align: left;">
+                <p style="color: #e74c3c; font-weight: bold; margin-bottom: 15px;">⚠️ Lưu ý quan trọng: Mật khẩu hiển thị là mật khẩu lưu trữ trong cơ sở dữ liệu (MD).</p>
+                
+                <div id="account-group-city" style="border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h3 style="margin-top: 5px; font-size: 16px; color: #2980b9;">Nhóm Tài khoản Cấp Thành phố (Level: city)</h3>
+                    <ul id="account-list-city" class="account-list" style="padding: 0;"></ul>
+                </div>
+                
+                <div id="account-group-district" style="margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h3 style="margin-top: 5px; font-size: 16px; color: #2980b9;">Nhóm Tài khoản Cấp dưới (Level: district)</h3>
+                    <ul id="account-list-district" class="account-list" style="padding: 0;"></ul>
+                </div>
+            </div>
 
             <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
                 <h3>Tạo Tài Khoản Mới</h3>
@@ -661,7 +682,6 @@
             <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('accountsModal').style.display = 'none';">Đóng</button>
         </div>
     </div>
-
     <div id="changePassModal" class="modal">
         <div class="modal-content">
             <h2>Đổi Mật Khẩu</h2>
@@ -812,7 +832,7 @@
             const defaultAccounts = {
                 'admin': { password: '123', role: 'admin', level: LEVEL.CITY }, 
                 'vksndtp': { password: '123', role: 'user', level: LEVEL.CITY, cbpc: 'VKSND TP Cần Thơ' }, // Tài khoản Cấp Thành phố
-                'vksndq1': { password: '123', role: 'user', level: LEVEL.DISTRICT, cbpc: 'VKSND Quận 1' }, // Tài khoản Cấp dưới
+                'vksndq1': { password: '123', role: 'user', level: LEVEL.DISTRICT, cbpc: 'VKSND Q1' }, // Tài khoản Cấp dưới (đã chỉnh lại cbpc mặc định ngắn gọn hơn)
             };
             database.ref('accounts').update(defaultAccounts)
                 .then(() => console.log("Tài khoản mặc định (có level) đã được kiểm tra/khởi tạo."))
@@ -1013,18 +1033,77 @@
         }
 
         function updateAccountList() {
-            const list = document.getElementById('account-list');
-            list.innerHTML = '';
-            Object.keys(accounts).forEach((username) => {
+            const listCity = document.getElementById('account-list-city');
+            const listDistrict = document.getElementById('account-list-district');
+            listCity.innerHTML = '';
+            listDistrict.innerHTML = '';
+            
+            // Lọc và phân loại tài khoản
+            const cityAccounts = {};
+            const districtAccounts = {};
+            
+            Object.keys(accounts).forEach(username => {
                 const acc = accounts[username];
-                const levelText = acc.level === LEVEL.CITY ? 'Thành phố' : 'Cấp dưới';
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <span>${username} (${acc.role}, Cấp: ${levelText}) ${acc.cbpc ? `(${acc.cbpc})` : ''}</span>
-                    ${username !== 'admin' && username !== currentUser.username ? `<button class="delete-btn" onclick="deleteAccount('${username}')">Xóa</button>` : ''}
-                `;
-                list.appendChild(li);
+                if (acc.level === LEVEL.CITY) {
+                    cityAccounts[username] = acc;
+                } else if (acc.level === LEVEL.DISTRICT) {
+                    districtAccounts[username] = acc;
+                }
             });
+
+            // Hàm tạo item tài khoản
+            const createAccountItem = (username, acc) => {
+                const li = document.createElement('li');
+                const isMasterAdmin = username === 'admin' && acc.role === 'admin';
+                const levelText = acc.level === LEVEL.CITY ? 'Thành phố' : 'Cấp dưới';
+                
+                let cbpcInfo = acc.cbpc ? ` (${acc.cbpc})` : '';
+
+                li.innerHTML = `
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; text-align: left;">
+                        <span>**Tên đăng nhập:** <strong>${username}</strong> (${acc.role}, Cấp: ${levelText}) ${cbpcInfo}</span>
+                        <span style="font-style: italic; color: #e74c3c; margin-top: 5px;">**Mật khẩu (MD):** ${acc.password}</span>
+                    </div>
+                    <div style="display: flex; gap: 5px; margin-top: 5px;">
+                        <button class="reset-btn" style="background-color: #f39c12;" onclick="resetAccountPassword('${username}')">Reset Mật khẩu</button>
+                        ${!isMasterAdmin && username !== currentUser.username ? `<button class="delete-btn" onclick="deleteAccount('${username}')">Xóa</button>` : ''}
+                    </div>
+                `;
+                return li;
+            };
+
+            // Hiển thị tài khoản cấp Thành phố
+            Object.keys(cityAccounts).sort().forEach((username) => {
+                listCity.appendChild(createAccountItem(username, cityAccounts[username]));
+            });
+
+            // Hiển thị tài khoản cấp Dưới
+            Object.keys(districtAccounts).sort().forEach((username) => {
+                listDistrict.appendChild(createAccountItem(username, districtAccounts[username]));
+            });
+        }
+        
+        function resetAccountPassword(username) {
+            const defaultPassword = '123';
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('Bạn không có quyền thực hiện chức năng này.');
+                return;
+            }
+            if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản ${username} về mặc định '${defaultPassword}' không?`)) {
+                
+                const updates = {};
+                updates[`accounts/${username}/password`] = defaultPassword;
+                
+                database.ref().update(updates)
+                    .then(() => {
+                        alert(`Đã đặt lại mật khẩu cho ${username} thành công. Mật khẩu mới là: ${defaultPassword}`);
+                        // Force a re-render of the list to show the new password
+                        updateAccountList(); 
+                    })
+                    .catch(error => {
+                        alert('Lỗi khi đặt lại mật khẩu: ' + error.message);
+                    });
+            }
         }
 
         function createAccount() {
@@ -1038,10 +1117,24 @@
             if (level !== LEVEL.CITY && level !== LEVEL.DISTRICT) { alert('Cấp độ tài khoản không hợp lệ.'); return; }
 
             const newAccount = { password: pass, role: role, level: level };
-            // Nếu là tài khoản cấp dưới, có thể bạn muốn đặt trường CBPC mặc định là username hoặc yêu cầu nhập
-            if (level === LEVEL.DISTRICT && role === 'user') {
-                 newAccount.cbpc = `VKSND ${user.toUpperCase()}`; // Ví dụ: vksndq1 -> VKSND Q1
+            
+            // Logic gán trường Cán bộ phân công (cbpc) mặc định
+            // Đảm bảo chỉ user mới có cbpc để lọc đơn, admin không cần
+            if (role === 'user') {
+                if (level === LEVEL.DISTRICT) {
+                    // Gán mặc định là tên đơn vị cho tài khoản cấp dưới (Ví dụ: vksndq1 -> VKSND Q1)
+                    newAccount.cbpc = `VKSND ${user.toUpperCase().replace('VKSND', '').trim()}`; // Cố gắng làm sạch tên CBPC
+                } else if (level === LEVEL.CITY) {
+                    // Gán mặc định cho tài khoản cấp thành phố
+                    newAccount.cbpc = 'VKSND TP Cần Thơ';
+                }
+            } else {
+                 // Admin không cần cbpc để lọc
+                 newAccount.cbpc = null;
             }
+            
+            console.log("Đang tạo tài khoản:", user);
+            console.log("Dữ liệu tài khoản gửi lên Firebase:", newAccount);
 
             database.ref(`accounts/${user}`).set(newAccount)
                 .then(() => {
@@ -1052,7 +1145,9 @@
                     alert('Tạo tài khoản thành công.');
                 })
                 .catch(error => {
-                    alert('Lỗi tạo tài khoản: ' + error.message);
+                    // Cải thiện thông báo lỗi nếu Firebase từ chối ghi
+                    console.error('LỖI CHI TIẾT TẠO TÀI KHOẢN:', error);
+                    alert('LỖI TẠO TÀI KHOẢN: Vui lòng kiểm tra console (F12) để xem chi tiết lỗi từ Firebase. Thông báo lỗi: ' + error.message);
                 });
         }
 
