@@ -462,7 +462,7 @@
                 <input type="date" id="ngay_chuyen_don">
             </div>
             <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
+                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
                 <div id="can_cu_container" style="width: 100%;">
                     </div>
                 <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu()">Thêm Căn cứ</button>
@@ -570,7 +570,7 @@
                     <input type="date" id="sua-ngay_chuyen_don">
                 </div>
                 <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
+                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
                     <div id="sua-can_cu_container" style="width: 100%;">
                     </div>
                     <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu('sua-')">Thêm Căn cứ</button>
@@ -1263,7 +1263,7 @@
                 return;
             }
 
-            let csv = "STT,Ngày nhận,Nguồn đơn,Họ tên/ CQ/ TC,Địa chỉ,Đơn ghi ngày,Phân loại,Thẩm quyền,Cán bộ phân công,Chức danh,Nội dung (Tóm tắt),Đề xuất,Kết quả,Nơi chuyển đơn,Ngày chuyển đơn,Căn cứ (Điểm/Khoản/Điều/Văn bản)\n";
+            let csv = "STT,Ngày nhận,Nguồn đơn,Họ tên/ CQ/ TC,Địa chỉ,Đơn ghi ngày,Phân loại,Thẩm quyền,Cán bộ phân công,Chức danh,Nội dung (Tóm tắt),Đề xuất,Kết quả,Nơi chuyển đơn,Ngày chuyển đơn,Căn cứ (Quy định pháp luật)\n";
 
             dons.forEach((don, index) => {
                 const canCuText = getCanCuString(don.canCu);
