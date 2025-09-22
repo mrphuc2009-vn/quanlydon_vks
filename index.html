@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     
     <meta http-equiv="Content-Security-Policy" 
-        content="default-src 'self' https://*.firebaseio.com https://*.firebasedatabase.app https://www.gstatic.com https://cdn.jsdelivr.net; 
+        content="default-src 'self'; 
                  style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; 
                  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net; 
-                 connect-src 'self' **https://www.gstatic.com** **https://cdn.jsdelivr.net** https://*.firebaseio.com https://*.firebasedatabase.app;
+                 connect-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.firebasedatabase.app;
                  img-src 'self' data: https://vienkiemsat.cantho.gov.vn;">
 
-    <title>Phần Mềm Quản Lý Đơn</title>
+    <title>Phần Mềm Quản Lý Đơn (Firebase Shared Data)</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -359,10 +359,10 @@
 </head>
 <body>
     <div class="login-container active" id="login-container">
-        <h2>Quản Lý Đơn Khiếu nại - tố cáo</h2>
+        <h2>Quản Lý Đơn</h2>
         <h3>ĐĂNG NHẬP</h3>
         <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
-        <input type="password" id="password" placeholder="Mật khẩu" value="123" onkeypress="if(event.key === 'Enter') login()">
+        <input type="password" id="password" placeholder="Mật khẩu" value="admin1234" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
         <div class="forgot-password">
             <a href="#" onclick="handleForgotPassword(); return false;">Quên mật khẩu? (Đặt lại admin về admin1234)</a>
@@ -380,7 +380,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
+            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
         </div>
 
         <div class="menu">
@@ -795,7 +795,8 @@
             console.log("[INFO] Dữ liệu tài khoản đã được cập nhật.");
         }, (error) => {
             console.error("[ERROR] Lỗi tải dữ liệu tài khoản:", error);
-            alert("Lỗi kết nối CSDL (Tài khoản). Vui lòng kiểm tra console.");
+            // Thay vì alert, chỉ log để tránh người dùng bị gián đoạn
+            console.log("Lỗi kết nối CSDL (Tài khoản). Vui lòng kiểm tra console.");
         });
 
 
@@ -814,7 +815,7 @@
                 document.getElementById('main-container').classList.add('active');
                 
                 document.getElementById('username').value = '';
-                document.getElementById('password').value = '123'; // Đặt lại mặc định để nhập lần sau
+                document.getElementById('password').value = 'admin1234'; // Đặt lại mật khẩu reset
                 
                 initSelectOptions();
                 
