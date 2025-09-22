@@ -73,6 +73,21 @@
         .login-container button:hover {
             background-color: #219653;
         }
+        /* START: CSS CHO NÚT QUÊN MẬT KHẨU */
+        .forgot-password {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .forgot-password a {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9em;
+            display: block; /* Đảm bảo link chiếm trọn chiều rộng */
+        }
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        /* END: CSS CHO NÚT QUÊN MẬT KHẨU */
         .main-container {
             width: 100%;
             max-width: 1200px;
@@ -342,6 +357,9 @@
         <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
         <input type="password" id="password" placeholder="Mật khẩu" value="123" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
+        <div class="forgot-password">
+            <a href="#" onclick="handleForgotPassword(); return false;">Quên mật khẩu?</a>
+        </div>
         <div class="footer-login">
             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
             <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
@@ -818,6 +836,36 @@
                     alert('Lỗi khi đổi mật khẩu: ' + error.message);
                 });
         }
+        
+        // START: THÊM HÀM XỬ LÝ QUÊN MẬT KHẨU
+        function handleForgotPassword() {
+            // Đặt lại mật khẩu admin về giá trị mặc định đã biết
+            const resetUsername = 'admin'; 
+            const newPassword = 'admin1234'; // Mật khẩu mới sau khi reset
+            
+            if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
+                const accountsRef = firebase.database().ref('accounts').child(resetUsername);
+                
+                // Kiểm tra xem tài khoản admin có tồn tại không
+                if (!accounts[resetUsername]) {
+                    alert("Lỗi: Tài khoản 'admin' không tồn tại trong hệ thống.");
+                    return;
+                }
+                
+                accountsRef.update({ password: newPassword })
+                    .then(() => {
+                        alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng đăng nhập lại.`);
+                        // Đóng modal đăng nhập (nếu đang mở) để người dùng nhập mật khẩu mới
+                        document.getElementById('login-container').style.display = 'block';
+                        document.getElementById('username').value = resetUsername;
+                        document.getElementById('password').value = newPassword; // Gợi ý mật khẩu mới
+                    })
+                    .catch((error) => {
+                        alert("Lỗi khi đặt lại mật khẩu: " + error.message);
+                    });
+            }
+        }
+        // END: THÊM HÀM XỬ LÝ QUÊN MẬT KHẨU
 
         function showAccountsModal() {
             if (currentUser && currentUser.role === 'admin') {
