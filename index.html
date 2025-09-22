@@ -772,35 +772,51 @@
 
         // --- 3. ACCOUNT MANAGEMENT (ĐÃ CẬP NHẬT) ---
 
+        // START: HÀM ĐĂNG NHẬP ĐÃ SỬA LỖI BẤT ĐỒNG BỘ
         function login() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
 
-            const account = accounts[user];
-
-            if (account && account.password === pass) {
-                currentUser = { username: user, password: pass, role: account.role };
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('main-container').classList.add('active');
-                
-                document.getElementById('username').value = '';
-                document.getElementById('password').value = '123';
-                
-                initSelectOptions();
-                
-                if (currentUser.role === 'admin') {
-                    document.getElementById('account-btn').style.display = 'inline-block';
-                } else {
-                    document.getElementById('account-btn').style.display = 'none';
-                }
-                
-                document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
-                alert(`Đăng nhập thành công! Chào mừng ${user}.`);
-
-            } else {
-                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+            if (user === '' || pass === '') {
+                alert('Vui lòng nhập Tên đăng nhập và Mật khẩu.');
+                return;
             }
+
+            // Dùng once('value') để TẢI dữ liệu tài khoản TRỰC TIẾP từ Firebase và chờ đợi
+            firebase.database().ref('accounts').child(user).once('value')
+                .then(snapshot => {
+                    const account = snapshot.val();
+                    
+                    if (account && account.password === pass) {
+                        // Logic đăng nhập thành công
+                        currentUser = { username: user, password: pass, role: account.role };
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('main-container').classList.add('active');
+                        
+                        document.getElementById('username').value = '';
+                        document.getElementById('password').value = '123';
+                        
+                        initSelectOptions();
+                        
+                        if (currentUser.role === 'admin') {
+                            document.getElementById('account-btn').style.display = 'inline-block';
+                        } else {
+                            document.getElementById('account-btn').style.display = 'none';
+                        }
+                        
+                        document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
+                        alert(`Đăng nhập thành công! Chào mừng ${user}.`);
+
+                    } else {
+                        // Logic đăng nhập thất bại
+                        alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+                    }
+                })
+                .catch(error => {
+                    alert('Lỗi kết nối hoặc tải dữ liệu tài khoản: ' + error.message);
+                });
         }
+        // END: HÀM ĐĂNG NHẬP ĐÃ SỬA LỖI
 
         function logout() {
             currentUser = null;
@@ -837,7 +853,7 @@
                 });
         }
         
-       // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI TẢI DỮ LIỆU)
+        // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI TẢI DỮ LIỆU)
         function handleForgotPassword() {
             const resetUsername = 'admin'; 
             const newPassword = 'admin1234'; // Mật khẩu mới sau khi reset
@@ -934,12 +950,127 @@
 
         // --- 4. FORM AND DATA MANAGEMENT (ĐÃ CẬP NHẬT SAVE/UPDATE/DELETE) ---
 
-        function initSelectOptions() { /* ... (giữ nguyên) ... */ }
-        function capNhatThamQuyenMacDinh(prefix = '') { /* ... (giữ nguyên) ... */ }
-        function addCanCu(prefix = '') { /* ... (giữ nguyên) ... */ }
-        function removeCanCu(index, prefix = '') { /* ... (giữ nguyên) ... */ }
-        function getCanCuData(prefix = '') { /* ... (giữ nguyên) ... */ }
-        function populateCanCuFields(data, prefix = '') { /* ... (giữ nguyên) ... */ }
+        function initSelectOptions() { 
+            // Hàm này giữ nguyên
+            const nguonDonSelect = document.getElementById('nguon_don');
+            const suaNguonDonSelect = document.getElementById('sua-nguon_don');
+            const noiChuyenDonSelect = document.getElementById('noi_chuyen_don');
+            const suaNoiChuyenDonSelect = document.getElementById('sua-noi_chuyen_don');
+
+            const optionTemplate = (value) => `<option value="${value}">${value}</option>`;
+
+            // Nguồn đơn
+            lookupData['Nguồn đơn'].forEach(item => {
+                nguonDonSelect.innerHTML += optionTemplate(item);
+                suaNguonDonSelect.innerHTML += optionTemplate(item);
+            });
+
+            // Nơi chuyển đơn
+            lookupData['Nơi chuyển đơn'].forEach(item => {
+                noiChuyenDonSelect.innerHTML += optionTemplate(item);
+                suaNoiChuyenDonSelect.innerHTML += optionTemplate(item);
+            });
+
+            // Thêm option rỗng/chọn ban đầu
+            nguonDonSelect.innerHTML = `<option value="">--Chọn--</option>` + nguonDonSelect.innerHTML;
+            noiChuyenDonSelect.innerHTML = `<option value="">--Chọn--</option>` + noiChuyenDonSelect.innerHTML;
+
+        }
+
+        function capNhatThamQuyenMacDinh(prefix = '') { 
+            // Hàm này giữ nguyên
+            const phanLoaiSelect = document.getElementById(prefix + 'phan_loai');
+            const thamQuyenSelect = document.getElementById(prefix + 'tham_quyen');
+            const noiDung = phanLoaiSelect.value;
+            
+            // Đặt lại mặc định
+            thamQuyenSelect.value = 'Thuộc thẩm quyền giải quyết';
+
+            if (noiDung === 'Đề nghị KN, GĐT, TT' || noiDung === 'Đề nghị kiểm tra QĐGQKN' || noiDung === 'Tin báo/Tố giác tội phạm trong HĐTP') {
+                thamQuyenSelect.value = 'Thuộc thẩm quyền kiểm sát';
+            } else if (noiDung === 'Kiến nghị/Phản ánh/Khác' || noiDung === 'Yêu cầu bồi thường thiệt hại') {
+                thamQuyenSelect.value = 'Không thuộc thẩm quyền';
+            }
+        }
+
+        function addCanCu(prefix = '') { 
+            // Hàm này giữ nguyên
+            const container = document.getElementById(prefix + 'can_cu_container');
+            const count = prefix === '' ? canCuCount++ : suaCanCuCount++;
+            
+            const div = document.createElement('div');
+            div.className = 'can-cu-item';
+            div.id = prefix + 'can-cu-item-' + count;
+            div.innerHTML = `
+                <input type="text" placeholder="Điểm" id="${prefix}can_cu_diem_${count}">
+                <input type="text" placeholder="Khoản" id="${prefix}can_cu_khoan_${count}">
+                <input type="text" placeholder="Điều" id="${prefix}can_cu_dieu_${count}">
+                <input type="text" placeholder="Văn bản" id="${prefix}can_cu_vanban_${count}">
+                <button type="button" onclick="removeCanCu(${count}, '${prefix}')">Xóa</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeCanCu(index, prefix = '') { 
+            // Hàm này giữ nguyên
+            const element = document.getElementById(prefix + 'can-cu-item-' + index);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        function getCanCuData(prefix = '') { 
+            // Hàm này giữ nguyên
+            const container = document.getElementById(prefix + 'can_cu_container');
+            const items = container.querySelectorAll('.can-cu-item');
+            const data = [];
+            items.forEach(item => {
+                const index = item.id.split('-').pop();
+                const diem = document.getElementById(`${prefix}can_cu_diem_${index}`).value.trim();
+                const khoan = document.getElementById(`${prefix}can_cu_khoan_${index}`).value.trim();
+                const dieu = document.getElementById(`${prefix}can_cu_dieu_${index}`).value.trim();
+                const vanBan = document.getElementById(`${prefix}can_cu_vanban_${index}`).value.trim();
+
+                if (diem || khoan || dieu || vanBan) {
+                    data.push({ diem, khoan, dieu, vanBan });
+                }
+            });
+            return data;
+        }
+
+        function populateCanCuFields(data, prefix = '') { 
+            // Hàm này giữ nguyên
+            const container = document.getElementById(prefix + 'can_cu_container');
+            container.innerHTML = '';
+            
+            if (prefix === '') {
+                canCuCount = 1;
+            } else {
+                suaCanCuCount = 1;
+            }
+
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    const count = prefix === '' ? canCuCount++ : suaCanCuCount++;
+                    const div = document.createElement('div');
+                    div.className = 'can-cu-item';
+                    div.id = prefix + 'can-cu-item-' + count;
+                    div.innerHTML = `
+                        <input type="text" placeholder="Điểm" id="${prefix}can_cu_diem_${count}" value="${item.diem || ''}">
+                        <input type="text" placeholder="Khoản" id="${prefix}can_cu_khoan_${count}" value="${item.khoan || ''}">
+                        <input type="text" placeholder="Điều" id="${prefix}can_cu_dieu_${count}" value="${item.dieu || ''}">
+                        <input type="text" placeholder="Văn bản" id="${prefix}can_cu_vanban_${count}" value="${item.vanBan || ''}">
+                        <button type="button" onclick="removeCanCu(${count}, '${prefix}')">Xóa</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            // Đảm bảo luôn có ít nhất 1 dòng trống nếu danh sách rỗng
+            if (!data || data.length === 0) {
+                 addCanCu(prefix);
+            }
+        }
 
         function clearForm() {
             document.getElementById('ngay_nhan').value = new Date().toISOString().slice(0, 10);
@@ -1113,9 +1244,112 @@
         }
         
         // Cần cập nhật lại các hàm Export để lấy dữ liệu từ biến 'dons'
-        function getCanCuString(canCuArray) { /* ... (giữ nguyên) ... */ }
-        function exportList() { /* ... (giữ nguyên) ... */ }
-        function exportReport() { /* ... (giữ nguyên) ... */ }
+        function getCanCuString(canCuArray) {
+             // Hàm này giữ nguyên
+            if (!canCuArray || canCuArray.length === 0) return 'Chưa có căn cứ';
+            
+            return canCuArray.map(c => {
+                const parts = [];
+                if (c.diem) parts.push(`Điểm ${c.diem}`);
+                if (c.khoan) parts.push(`Khoản ${c.khoan}`);
+                if (c.dieu) parts.push(`Điều ${c.dieu}`);
+                if (c.vanBan) parts.push(`${c.vanBan}`);
+                
+                return parts.join(' ');
+            }).join('; Theo quy định tại ');
+        }
+        
+        function exportList() { 
+            // Hàm này giữ nguyên
+            if (dons.length === 0) {
+                alert('Không có dữ liệu đơn để xuất.');
+                return;
+            }
+
+            const header = [
+                'STT', 'Ngày nhận', 'Nguồn đơn', 'Họ tên/CQ/TC', 'Địa chỉ', 'Đơn ghi ngày', 'Nội dung (Tóm tắt)',
+                'Phân loại', 'Thẩm quyền', 'Căn cứ (Tóm tắt)', 'Đề xuất', 'Kết quả (Trạng thái cuối cùng)', 
+                'Cán bộ phân công', 'Chức danh', 'Nơi chuyển đơn', 'Ngày chuyển đơn', 'Thời điểm cập nhật cuối'
+            ].map(escapeCSV).join(',');
+            
+            const rows = dons.map((don, index) => {
+                const canCuStr = getCanCuString(don.canCu).replace(/\n/g, ' - '); // Loại bỏ xuống dòng trong CSV
+                return [
+                    index + 1,
+                    formatDate(don.ngayNhan),
+                    don.nguonDon,
+                    don.hoTen,
+                    don.diaChi,
+                    formatDate(don.ngayGhi),
+                    don.noiDung,
+                    don.phanLoai,
+                    don.thamQuyen,
+                    canCuStr,
+                    don.deXuat,
+                    don.ketQua,
+                    don.canBoPhanCong,
+                    don.chucDanh,
+                    don.noiChuyenDon,
+                    formatDate(don.ngayChuyenDon),
+                    new Date(don.lastUpdated).toLocaleString('vi-VN')
+                ].map(escapeCSV).join(',');
+            }).join('\n');
+            
+            const csvContent = header + '\n' + rows;
+            downloadFile(csvContent, 'DanhSachDon_' + new Date().toISOString().slice(0, 10) + '.csv', 'text/csv');
+            alert('Đã xuất danh sách đơn thành công!');
+        }
+
+        function exportReport() { 
+            // Hàm này giữ nguyên
+            if (dons.length === 0) {
+                alert('Không có dữ liệu đơn để xuất báo cáo.');
+                return;
+            }
+
+            const counts = {};
+            const types = ['Khiếu nại', 'Tố cáo', 'Kiến nghị/Phản ánh/Khác', 'Yêu cầu bồi thường thiệt hại', 
+                           'Đề nghị KN, GĐT, TT', 'Đề nghị kiểm tra QĐGQKN', 'Tin báo/Tố giác tội phạm trong HĐTP'];
+            
+            types.forEach(type => {
+                counts[type] = { 
+                    'Tổng số': 0,
+                    'Thuộc thẩm quyền giải quyết': 0,
+                    'Thuộc thẩm quyền kiểm sát': 0,
+                    'Không thuộc thẩm quyền': 0 
+                };
+            });
+
+            dons.forEach(don => {
+                if (types.includes(don.phanLoai)) {
+                    counts[don.phanLoai]['Tổng số']++;
+                    if (don.thamQuyen) {
+                         if (counts[don.phanLoai][don.thamQuyen] !== undefined) {
+                            counts[don.phanLoai][don.thamQuyen]++;
+                        }
+                    }
+                }
+            });
+
+            let csvContent = [
+                'Loại Đơn', 'Tổng số', 'Thuộc thẩm quyền giải quyết', 'Thuộc thẩm quyền kiểm sát', 'Không thuộc thẩm quyền'
+            ].map(escapeCSV).join(',') + '\n';
+            
+            types.forEach(type => {
+                const data = counts[type];
+                csvContent += [
+                    type,
+                    data['Tổng số'],
+                    data['Thuộc thẩm quyền giải quyết'],
+                    data['Thuộc thẩm quyền kiểm sát'],
+                    data['Không thuộc thẩm quyền']
+                ].map(escapeCSV).join(',') + '\n';
+            });
+            
+            downloadFile(csvContent, 'BaoCaoTongHop_' + new Date().toISOString().slice(0, 10) + '.csv', 'text/csv');
+            alert('Đã xuất báo cáo tổng hợp thành công!');
+        }
+
         function downloadJSON() {
             const dataToBackup = {
                 dons: dons,
@@ -1180,7 +1414,16 @@ ${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
             }
         }
         
-        function downloadProposalDoc() { /* ... (giữ nguyên) ... */ }
+        function downloadProposalDoc() { 
+            // Hàm này giữ nguyên
+            const content = document.getElementById('proposal-content').textContent;
+            if (!content || content.includes("Chưa có căn cứ")) {
+                alert("Không có nội dung phiếu đề xuất để tải về.");
+                return;
+            }
+            // Tải xuống dưới dạng .txt nhưng với tên mở rộng là .doc (vì không có thư viện tạo file Word chính thức)
+            downloadFile(content, 'PhieuDeXuat.doc', 'text/plain');
+        }
 
         // --- INITIALIZATION ---
         function init() {
