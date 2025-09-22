@@ -373,7 +373,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -382,7 +382,7 @@
             <button class="export-btn" onclick="exportReport()">Xuất Báo Cáo (.csv)</button>
             <button class="word-btn" onclick="extractProposalSlip()">Trích Xuất Phiếu ĐX</button>
             <button class="json-btn" onclick="downloadJSON()">Tải JSON (Backup)</button>
-            <button class="account-btn" id="account-btn" onclick="showAccountsModal()" style="display: none;">Quản Lý Tài Khoản</button>
+            <button class="json-btn" onclick="showUserReportModal()">Báo cáo theo CBPC</button> <button class="account-btn" id="account-btn" onclick="showAccountsModal()" style="display: none;">Quản Lý Tài Khoản</button>
         </div>
 
         <div class="form-grid">
@@ -621,10 +621,32 @@
         </div>
     </div>
 
-
+    <div id="userReportModal" class="modal">
+        <div class="modal-content large-modal">
+            <h2>Báo Cáo Tổng Hợp Theo Cán Bộ Phân Công</h2>
+            <div id="user-report-summary" style="margin-bottom: 20px;"></div>
+            <div class="table-container" style="max-height: 60vh;">
+                <table id="user-report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">STT</th>
+                            <th style="width: 15%;">Cán bộ phân công</th>
+                            <th style="width: 15%;">Tổng số đơn</th>
+                            <th style="width: 20%;">T/Q Giải quyết</th>
+                            <th style="width: 20%;">T/Q Kiểm sát</th>
+                            <th style="width: 20%;">Không T/Q</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-report-body">
+                    </tbody>
+                </table>
+            </div>
+            <button class="export-btn" style="margin-right: 10px;" onclick="exportUserReport()">Xuất Báo Cáo (.csv)</button>
+            <button class="cancel-btn" onclick="document.getElementById('userReportModal').style.display = 'none';">Đóng</button>
+        </div>
+    </div>
     <script>
         // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
-        // THAY THẾ CHỖ NÀY BẰNG CẤU HÌNH CỦA BẠN (Bước 1)
         const firebaseConfig = {
             apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
             authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
@@ -635,21 +657,18 @@
             appId: "1:209768483000:web:1eb449ad41840e23334c4d"
         };
 
-        // Khởi tạo Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         // --- GLOBAL DATA & INITIALIZATION ---
 
-        let accounts = {}; // Dữ liệu tài khoản (tải từ Firebase)
-        let dons = []; // Dữ liệu đơn (tải từ Firebase dưới dạng mảng để dễ xử lý)
+        let accounts = {}; 
+        let dons = []; 
         let currentUser = null;
 
-        // Căn cứ logic
         let canCuCount = 1;
         let suaCanCuCount = 0;
 
-        // Dữ liệu danh mục
         const lookupData = {
             'Nguồn đơn': [
                 'Bưu điện', 'Tiếp dân', 'Các cơ quan Đảng, Nhà nước', 
@@ -666,8 +685,6 @@
 
         // --- UTILITY FUNCTIONS ---
         
-        // Không cần hàm saveData() nữa vì dữ liệu được lưu ngay vào Firebase
-
         function downloadFile(content, filename, type) {
             // ... (Hàm này giữ nguyên)
             if (type.includes('text/csv')) {
@@ -717,49 +734,41 @@
         }
 
 
-        // --- 2. FIREBASE REALTIME LISTENERS (ĐÃ CẬP NHẬT) ---
+        // --- 2. FIREBASE REALTIME LISTENERS ---
 
-        // Khởi tạo các tài khoản mặc định nếu chưa có
         function initializeDefaultAccounts(){
             const defaultAccounts = {
                 'admin': { password: '123', role: 'admin' },
                 'user': { password: '123', role: 'user' }
             };
-            // set with update to not overwrite everything
             database.ref('accounts').update(defaultAccounts)
                 .then(() => console.log("Tài khoản mặc định đã được kiểm tra/khởi tạo."))
                 .catch(error => console.error("Lỗi khởi tạo tài khoản:", error));
         }
         
-        // Lắng nghe thay đổi dữ liệu đơn từ Firebase
         database.ref('dons').on('value', (snapshot) => {
             const data = snapshot.val();
-            dons = []; // Đặt lại mảng đơn
+            dons = []; 
             if (data) {
-                // Chuyển đối tượng Firebase thành mảng
                 Object.keys(data).forEach(key => {
                     dons.push({ id: key, ...data[key] });
                 });
             }
-            updateTable(); // Cập nhật bảng ngay khi dữ liệu thay đổi
+            updateTable(); 
         }, (error) => {
             console.error("Lỗi tải dữ liệu đơn:", error);
             alert("Lỗi kết nối CSDL (Đơn). Vui lòng kiểm tra console.");
         });
 
-        // Lắng nghe thay đổi dữ liệu tài khoản từ Firebase
         database.ref('accounts').on('value', (snapshot) => {
-            accounts = snapshot.val() || {}; // Tải toàn bộ object tài khoản
+            accounts = snapshot.val() || {}; 
             if (currentUser) {
-                 // Cập nhật lại vai trò và giao diện nếu đang đăng nhập
                  const accountData = accounts[currentUser.username];
                  if (accountData) {
                     currentUser.role = accountData.role;
-                    currentUser.password = accountData.password; // Cập nhật mật khẩu nếu đổi
-                    // Ẩn/hiện nút Quản lý Tài khoản
+                    currentUser.password = accountData.password;
                     document.getElementById('account-btn').style.display = (currentUser.role === 'admin') ? 'inline-block' : 'none';
                  } else {
-                    // Nếu tài khoản hiện tại bị xóa, đăng xuất
                     logout();
                  }
             }
@@ -770,9 +779,8 @@
         });
 
 
-        // --- 3. ACCOUNT MANAGEMENT (ĐÃ CẬP NHẬT) ---
+        // --- 3. ACCOUNT MANAGEMENT ---
 
-        // START: HÀM ĐĂNG NHẬP ĐÃ SỬA LỖI BẤT ĐỒNG BỘ
         function login() {
             const user = document.getElementById('username').value.trim();
             const pass = document.getElementById('password').value;
@@ -782,13 +790,11 @@
                 return;
             }
 
-            // Dùng once('value') để TẢI dữ liệu tài khoản TRỰC TIẾP từ Firebase và chờ đợi
             firebase.database().ref('accounts').child(user).once('value')
                 .then(snapshot => {
                     const account = snapshot.val();
                     
                     if (account && account.password === pass) {
-                        // Logic đăng nhập thành công
                         currentUser = { username: user, password: pass, role: account.role };
                         document.getElementById('login-container').style.display = 'none';
                         document.getElementById('main-container').classList.add('active');
@@ -796,7 +802,7 @@
                         document.getElementById('username').value = '';
                         document.getElementById('password').value = '123';
                         
-                        initSelectOptions();
+                        initSelectOptions(); // Đảm bảo gọi sau khi đăng nhập
                         
                         if (currentUser.role === 'admin') {
                             document.getElementById('account-btn').style.display = 'inline-block';
@@ -808,7 +814,6 @@
                         alert(`Đăng nhập thành công! Chào mừng ${user}.`);
 
                     } else {
-                        // Logic đăng nhập thất bại
                         alert('Tên đăng nhập hoặc mật khẩu không đúng!');
                     }
                 })
@@ -816,7 +821,6 @@
                     alert('Lỗi kết nối hoặc tải dữ liệu tài khoản: ' + error.message);
                 });
         }
-        // END: HÀM ĐĂNG NHẬP ĐÃ SỬA LỖI
 
         function logout() {
             currentUser = null;
@@ -835,7 +839,6 @@
             if (newPass.length < 3) { alert('Mật khẩu mới phải có ít nhất 3 ký tự.'); return; }
             if (newPass !== confirmPass) { alert('Mật khẩu mới và xác nhận mật khẩu không khớp.'); return; }
 
-            // Cập nhật mật khẩu trong Firebase
             const updates = {};
             updates[`accounts/${currentUser.username}/password`] = newPass;
             
@@ -853,14 +856,12 @@
                 });
         }
         
-        // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI TẢI DỮ LIỆU)
         function handleForgotPassword() {
             const resetUsername = 'admin'; 
-            const newPassword = 'admin1234'; // Mật khẩu mới sau khi reset
+            const newPassword = 'admin1234'; 
             
             if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
                 
-                // Lấy dữ liệu tài khoản trực tiếp từ Firebase (không dùng biến accounts đã tải)
                 firebase.database().ref('accounts').child(resetUsername).once('value')
                     .then(snapshot => {
                         if (!snapshot.exists()) {
@@ -873,11 +874,9 @@
                         accountsRef.update({ password: newPassword })
                             .then(() => {
                                 alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng sử dụng mật khẩu này để đăng nhập.`);
-                                
-                                // Cập nhật giao diện đăng nhập
                                 document.getElementById('username').value = resetUsername;
                                 document.getElementById('password').value = newPassword;
-                                document.getElementById('loginModal').style.display = 'none'; // Đảm bảo modal được đóng/mở lại
+                                document.getElementById('loginModal').style.display = 'none';
                             })
                             .catch((error) => {
                                 alert("Lỗi khi đặt lại mật khẩu: " + error.message);
@@ -888,7 +887,6 @@
                     });
             }
         }
-        // END: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU
 
         function showAccountsModal() {
             if (currentUser && currentUser.role === 'admin') {
@@ -921,7 +919,6 @@
             if (user === '' || pass === '') { alert('Tên đăng nhập và mật khẩu không được để trống.'); return; }
             if (accounts[user]) { alert('Tên đăng nhập đã tồn tại.'); return; }
 
-            // Thêm tài khoản vào Firebase
             const newAccount = { password: pass, role: role };
             database.ref(`accounts/${user}`).set(newAccount)
                 .then(() => {
@@ -936,7 +933,6 @@
 
         function deleteAccount(username) {
             if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ${username}?`)) {
-                // Xóa tài khoản khỏi Firebase
                 database.ref(`accounts/${username}`).remove()
                     .then(() => {
                         alert(`Đã xóa tài khoản ${username}.`);
@@ -948,14 +944,26 @@
         }
 
 
-        // --- 4. FORM AND DATA MANAGEMENT (ĐÃ CẬP NHẬT SAVE/UPDATE/DELETE) ---
-
+        // --- 4. FORM AND DATA MANAGEMENT ---
+        
+        // START: FIX 2 - Khắc phục lỗi lặp danh sách
         function initSelectOptions() { 
-            // Hàm này giữ nguyên
             const nguonDonSelect = document.getElementById('nguon_don');
             const suaNguonDonSelect = document.getElementById('sua-nguon_don');
             const noiChuyenDonSelect = document.getElementById('noi_chuyen_don');
             const suaNoiChuyenDonSelect = document.getElementById('sua-noi_chuyen_don');
+
+            // Xóa nội dung cũ trước khi thêm mới
+            nguonDonSelect.innerHTML = ''; 
+            suaNguonDonSelect.innerHTML = '';
+            noiChuyenDonSelect.innerHTML = '';
+            suaNoiChuyenDonSelect.innerHTML = '';
+            // Thêm option mặc định (Chọn)
+            nguonDonSelect.innerHTML = `<option value="">--Chọn--</option>`;
+            suaNguonDonSelect.innerHTML = `<option value="">--Chọn--</option>`;
+            noiChuyenDonSelect.innerHTML = `<option value="">--Chọn--</option>`;
+            suaNoiChuyenDonSelect.innerHTML = `<option value="">--Chọn--</option>`;
+            // END: FIX 2
 
             const optionTemplate = (value) => `<option value="${value}">${value}</option>`;
 
@@ -970,20 +978,13 @@
                 noiChuyenDonSelect.innerHTML += optionTemplate(item);
                 suaNoiChuyenDonSelect.innerHTML += optionTemplate(item);
             });
-
-            // Thêm option rỗng/chọn ban đầu
-            nguonDonSelect.innerHTML = `<option value="">--Chọn--</option>` + nguonDonSelect.innerHTML;
-            noiChuyenDonSelect.innerHTML = `<option value="">--Chọn--</option>` + noiChuyenDonSelect.innerHTML;
-
         }
 
         function capNhatThamQuyenMacDinh(prefix = '') { 
-            // Hàm này giữ nguyên
             const phanLoaiSelect = document.getElementById(prefix + 'phan_loai');
             const thamQuyenSelect = document.getElementById(prefix + 'tham_quyen');
             const noiDung = phanLoaiSelect.value;
             
-            // Đặt lại mặc định
             thamQuyenSelect.value = 'Thuộc thẩm quyền giải quyết';
 
             if (noiDung === 'Đề nghị KN, GĐT, TT' || noiDung === 'Đề nghị kiểm tra QĐGQKN' || noiDung === 'Tin báo/Tố giác tội phạm trong HĐTP') {
@@ -994,7 +995,6 @@
         }
 
         function addCanCu(prefix = '') { 
-            // Hàm này giữ nguyên
             const container = document.getElementById(prefix + 'can_cu_container');
             const count = prefix === '' ? canCuCount++ : suaCanCuCount++;
             
@@ -1012,7 +1012,6 @@
         }
 
         function removeCanCu(index, prefix = '') { 
-            // Hàm này giữ nguyên
             const element = document.getElementById(prefix + 'can-cu-item-' + index);
             if (element) {
                 element.remove();
@@ -1020,7 +1019,6 @@
         }
 
         function getCanCuData(prefix = '') { 
-            // Hàm này giữ nguyên
             const container = document.getElementById(prefix + 'can_cu_container');
             const items = container.querySelectorAll('.can-cu-item');
             const data = [];
@@ -1039,7 +1037,6 @@
         }
 
         function populateCanCuFields(data, prefix = '') { 
-            // Hàm này giữ nguyên
             const container = document.getElementById(prefix + 'can_cu_container');
             container.innerHTML = '';
             
@@ -1066,7 +1063,6 @@
                 });
             }
 
-            // Đảm bảo luôn có ít nhất 1 dòng trống nếu danh sách rỗng
             if (!data || data.length === 0) {
                  addCanCu(prefix);
             }
@@ -1087,7 +1083,7 @@
             document.getElementById('chuc_danh').value = currentUser ? currentUser.role === 'admin' ? 'Quản trị viên' : 'Người dùng' : 'Kiểm sát viên'; 
             document.getElementById('noi_chuyen_don').value = '';
             document.getElementById('ngay_chuyen_don').value = '';
-            document.getElementById('edit-id').value = ''; // Sửa thành ID
+            document.getElementById('edit-id').value = ''; 
 
             populateCanCuFields([], '');
             document.getElementById('ho_ten').focus();
@@ -1120,7 +1116,6 @@
             }
 
             if (editId === '') {
-                // Thêm mới vào Firebase
                 database.ref('dons').push(newDon)
                     .then(() => {
                         alert('Thêm đơn mới thành công!');
@@ -1128,7 +1123,6 @@
                     })
                     .catch(error => alert('Lỗi thêm đơn: ' + error.message));
             } else {
-                // Cập nhật lên Firebase
                 database.ref('dons/' + editId).set(newDon)
                     .then(() => {
                         alert('Cập nhật đơn thành công!');
@@ -1139,13 +1133,12 @@
         }
 
         function editDon(id) {
-            const don = dons.find(d => d.id === id); // Tìm đơn theo ID
+            const don = dons.find(d => d.id === id); 
             if (!don) { alert('Không tìm thấy đơn (ID lỗi).'); return; }
 
             document.getElementById('editModal').style.display = 'flex';
-            document.getElementById('edit-id').value = id; // Lưu ID vào ô ẩn
+            document.getElementById('edit-id').value = id; 
 
-            // Load dữ liệu
             document.getElementById('sua-ngay_nhan').value = don.ngayNhan || '';
             document.getElementById('sua-nguon_don').value = don.nguonDon || '';
             document.getElementById('sua-ho_ten').value = don.hoTen || '';
@@ -1161,7 +1154,6 @@
             document.getElementById('sua-noi_chuyen_don').value = don.noiChuyenDon || '';
             document.getElementById('sua-ngay_chuyen_don').value = don.ngayChuyenDon || '';
 
-            // Load Căn cứ
             populateCanCuFields(don.canCu || [], 'sua-');
         }
 
@@ -1192,30 +1184,25 @@
                 lastUpdated: new Date().toISOString()
             };
 
-            // Cập nhật lên Firebase
             database.ref('dons/' + id).set(updatedDon)
                 .then(() => {
                     document.getElementById('editModal').style.display = 'none';
                     alert('Cập nhật đơn thành công!');
-                    // updateTable sẽ được gọi tự động nhờ listener
                 })
                 .catch(error => alert('Lỗi cập nhật đơn: ' + error.message));
         }
 
         function deleteDon(id) {
             if (confirm('Bạn có chắc chắn muốn xóa đơn này?')) {
-                // Xóa khỏi Firebase
                 database.ref('dons/' + id).remove()
                     .then(() => {
                         alert('Đã xóa đơn!');
-                        // updateTable sẽ được gọi tự động nhờ listener
                     })
                     .catch(error => alert('Lỗi xóa đơn: ' + error.message));
             }
         }
 
         function updateTable() {
-            // Sắp xếp đơn theo ngày nhận mới nhất
             const sortedDons = [...dons].sort((a, b) => new Date(b.ngayNhan) - new Date(a.ngayNhan));
 
             const tableBody = document.getElementById('don-body');
@@ -1224,10 +1211,9 @@
             sortedDons.forEach((don, index) => {
                 const row = tableBody.insertRow();
                 
-                // Lưu ID Firebase vào thuộc tính data-id để dùng khi Sửa/Xóa
                 row.setAttribute('data-id', don.id); 
 
-                row.insertCell().textContent = index + 1; // STT
+                row.insertCell().textContent = index + 1; 
                 row.insertCell().textContent = formatDate(don.ngayNhan);
                 row.insertCell().textContent = don.hoTen;
                 row.insertCell().textContent = don.noiDung.length > 50 ? don.noiDung.substring(0, 50) + '...' : don.noiDung;
@@ -1243,9 +1229,7 @@
             });
         }
         
-        // Cần cập nhật lại các hàm Export để lấy dữ liệu từ biến 'dons'
         function getCanCuString(canCuArray) {
-             // Hàm này giữ nguyên
             if (!canCuArray || canCuArray.length === 0) return 'Chưa có căn cứ';
             
             return canCuArray.map(c => {
@@ -1260,7 +1244,6 @@
         }
         
         function exportList() { 
-            // Hàm này giữ nguyên
             if (dons.length === 0) {
                 alert('Không có dữ liệu đơn để xuất.');
                 return;
@@ -1273,7 +1256,7 @@
             ].map(escapeCSV).join(',');
             
             const rows = dons.map((don, index) => {
-                const canCuStr = getCanCuString(don.canCu).replace(/\n/g, ' - '); // Loại bỏ xuống dòng trong CSV
+                const canCuStr = getCanCuString(don.canCu).replace(/\n/g, ' - ');
                 return [
                     index + 1,
                     formatDate(don.ngayNhan),
@@ -1301,7 +1284,6 @@
         }
 
         function exportReport() { 
-            // Hàm này giữ nguyên
             if (dons.length === 0) {
                 alert('Không có dữ liệu đơn để xuất báo cáo.');
                 return;
@@ -1323,10 +1305,8 @@
             dons.forEach(don => {
                 if (types.includes(don.phanLoai)) {
                     counts[don.phanLoai]['Tổng số']++;
-                    if (don.thamQuyen) {
-                         if (counts[don.phanLoai][don.thamQuyen] !== undefined) {
+                    if (don.thamQuyen && counts[don.phanLoai][don.thamQuyen] !== undefined) {
                             counts[don.phanLoai][don.thamQuyen]++;
-                        }
                     }
                 }
             });
@@ -1350,6 +1330,83 @@
             alert('Đã xuất báo cáo tổng hợp thành công!');
         }
 
+        // START: CHỨC NĂNG BÁO CÁO THEO CBPC (THÊM MỚI)
+        function generateUserReport() {
+            const reportData = {};
+            const totalDons = dons.length;
+
+            // 1. Group and count data by 'Can bo phan cong'
+            dons.forEach(don => {
+                const cbpc = don.canBoPhanCong && don.canBoPhanCong.trim() !== '' ? don.canBoPhanCong : 'Chưa phân công';
+                if (!reportData[cbpc]) {
+                    reportData[cbpc] = {
+                        total: 0,
+                        'Thuộc thẩm quyền giải quyết': 0,
+                        'Thuộc thẩm quyền kiểm sát': 0,
+                        'Không thuộc thẩm quyền': 0
+                    };
+                }
+                reportData[cbpc].total++;
+                if (don.thamQuyen) {
+                    reportData[cbpc][don.thamQuyen]++;
+                }
+            });
+
+            const body = document.getElementById('user-report-body');
+            body.innerHTML = '';
+            let stt = 1;
+
+            // 2. Render table
+            Object.keys(reportData).sort().forEach(cbpc => {
+                const data = reportData[cbpc];
+                const row = body.insertRow();
+                row.insertCell().textContent = stt++;
+                row.insertCell().textContent = cbpc;
+                row.insertCell().textContent = data.total;
+                row.insertCell().textContent = data['Thuộc thẩm quyền giải quyết'];
+                row.insertCell().textContent = data['Thuộc thẩm quyền kiểm sát'];
+                row.insertCell().textContent = data['Không thuộc thẩm quyền'];
+            });
+
+            // 3. Render summary
+            document.getElementById('user-report-summary').innerHTML = `
+                <p><strong>Tổng số đơn đã nhập:</strong> ${totalDons}</p>
+            `;
+
+            return reportData; // Return data for export
+        }
+        
+        function showUserReportModal() {
+            generateUserReport(); 
+            document.getElementById('userReportModal').style.display = 'flex';
+        }
+
+        function exportUserReport() {
+            const reportData = generateUserReport(); 
+            
+            const header = [
+                'STT', 'Cán bộ phân công', 'Tổng số đơn', 'Thuộc thẩm quyền giải quyết', 'Thuộc thẩm quyền kiểm sát', 'Không thuộc thẩm quyền'
+            ].map(escapeCSV).join(',');
+            
+            let stt = 1;
+            const rows = Object.keys(reportData).sort().map(cbpc => {
+                const data = reportData[cbpc];
+                return [
+                    stt++,
+                    cbpc,
+                    data.total,
+                    data['Thuộc thẩm quyền giải quyết'],
+                    data['Thuộc thẩm quyền kiểm sát'],
+                    data['Không thuộc thẩm quyền']
+                ].map(escapeCSV).join(',');
+            }).join('\n');
+            
+            const csvContent = header + '\n' + rows;
+            downloadFile(csvContent, 'BaoCaoTheoCBPC_' + new Date().toISOString().slice(0, 10) + '.csv', 'text/csv');
+            alert('Đã xuất báo cáo theo Cán bộ phân công thành công!');
+        }
+        // END: CHỨC NĂNG BÁO CÁO THEO CBPC
+
         function downloadJSON() {
             const dataToBackup = {
                 dons: dons,
@@ -1359,10 +1416,8 @@
             downloadFile(dataStr, 'quanlydon_firebase_backup.json', 'text/json');
         }
         
-        // Cập nhật hàm Phiếu Đề Xuất để dùng ID
         function openProposalSlip(id) {
             const don = dons.find(d => d.id === id);
-            // ... (Phần còn lại giữ nguyên, chỉ thay don.index bằng don.id nếu cần)
             if (!don) { alert('Không tìm thấy đơn.'); return; }
             
             const today = formatDate(new Date().toISOString().slice(0, 10));
@@ -1408,32 +1463,28 @@ ${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
         function extractProposalSlip() {
             if (dons.length > 0) {
                 // Lấy đơn mới nhất (đã sắp xếp)
-                openProposalSlip(dons[0].id);
+                const sortedDons = [...dons].sort((a, b) => new Date(b.ngayNhan) - new Date(a.ngayNhan));
+                openProposalSlip(sortedDons[0].id);
             } else {
                 alert('Vui lòng nhập hoặc chọn một đơn để trích xuất phiếu đề xuất.');
             }
         }
         
         function downloadProposalDoc() { 
-            // Hàm này giữ nguyên
             const content = document.getElementById('proposal-content').textContent;
             if (!content || content.includes("Chưa có căn cứ")) {
                 alert("Không có nội dung phiếu đề xuất để tải về.");
                 return;
             }
-            // Tải xuống dưới dạng .txt nhưng với tên mở rộng là .doc (vì không có thư viện tạo file Word chính thức)
             downloadFile(content, 'PhieuDeXuat.doc', 'text/plain');
         }
 
         // --- INITIALIZATION ---
         function init() {
-            // Khởi tạo tài khoản mặc định (chỉ chạy 1 lần nếu chưa có)
             initializeDefaultAccounts(); 
-            initSelectOptions();
+            initSelectOptions(); // Khởi tạo danh sách (chỉ chạy 1 lần)
             populateCanCuFields([], '');
             populateCanCuFields([], 'sua-');
-            
-            // Lắng nghe dữ liệu (listeners) đã làm ở trên, không cần updateTable() ở đây
             
             document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
         }
