@@ -431,6 +431,7 @@
             <div class="form-group">
                 <label for="tham_quyen">7. Thẩm quyền:</label>
                 <select id="tham_quyen">
+                     <option value="">--Chọn--</option>
                     <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
                     <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
                     <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
@@ -438,11 +439,17 @@
             </div>
             <div class="form-group">
                 <label for="can_bo_phan_cong">8. Cán bộ phân công:</label>
-                <input type="text" id="can_bo_phan_cong" value="Nguyễn Văn A">
+                <input type="text" id="can_bo_phan_cong" value="">
             </div>
             <div class="form-group">
                 <label for="chuc_danh">9. Chức danh:</label>
-                <input type="text" id="chuc_danh" value="Kiểm sát viên">
+                 <select id="editChucDanh">
+                        <option value="">--Chọn--</option>
+                        <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
+                        <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
+                        <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
+                        <option value="Kiểm tra viên">Kiểm tra viên</option>
+                 </select>
             </div>
             <div class="form-group">
                 <label for="noi_chuyen_don">10. Nơi chuyển đơn (Nếu KTQ):</label>
