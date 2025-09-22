@@ -6,8 +6,8 @@
     <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self'; 
                  style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; 
-                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://cdn.jsdelivr.net; 
-                 connect-src 'self' https://www.gstatic.com https://cdn.jsdelivr.net https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app;
+                 script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.jsdelivr.net; 
+                 connect-src 'self' https://www.gstatic.com https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://*.jsdelivr.net;
                  img-src 'self' data: https://vienkiemsat.cantho.gov.vn;">
 
     <title>Phần Mềm Quản Lý Đơn (Firebase Shared Data)</title>
@@ -359,7 +359,7 @@
 </head>
 <body>
     <div class="login-container active" id="login-container">
-        <h2>Quản Lý Đơn</h2>
+        <h2>Quản Lý Đơn Khiếu nại - Tố cáo</h2>
         <h3>ĐĂNG NHẬP</h3>
         <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
         <input type="password" id="password" placeholder="Mật khẩu" value="admin1234" onkeypress="if(event.key === 'Enter') login()">
@@ -763,7 +763,15 @@
             if (accounts['admin']) {
                  console.log(`[ACCOUNT INFO] Tài khoản 'admin' đã tải. Mật khẩu: ${accounts['admin'].password}`);
             } else {
-                 console.error("[ACCOUNT ERROR] Không tìm thấy tài khoản 'admin' trong dữ liệu đã tải.");
+                 // Nếu không có tài khoản admin, tạo tài khoản admin mặc định
+                 if (Object.keys(accounts).length === 0) {
+                     console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản nào. Đang tạo tài khoản 'admin' mặc định.");
+                     database.ref('accounts/admin').set({ password: 'admin1234', role: 'admin' })
+                        .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'admin' mặc định."))
+                        .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'admin' mặc định:", err));
+                 } else {
+                     console.error("[ACCOUNT ERROR] Tài khoản 'admin' không được tìm thấy.");
+                 }
             }
 
             if (currentUser) {
@@ -865,9 +873,12 @@
                 
                 firebase.database().ref('accounts').child(resetUsername).once('value')
                     .then(snapshot => {
+                        // TẠO LẠI TÀI KHOẢN NẾU NÓ BỊ MẤT
                         if (!snapshot.exists()) {
-                            alert("Lỗi: Tài khoản 'admin' không tồn tại trong CSDL Firebase. Vui lòng kiểm tra lại cấu hình CSDL.");
-                            return;
+                            if (confirm(`Tài khoản 'admin' không tồn tại. Bạn có muốn tạo lại tài khoản này với mật khẩu '${newPassword}' không?`)) {
+                                return firebase.database().ref('accounts').child(resetUsername).set({ password: newPassword, role: 'admin' });
+                            }
+                            return; 
                         }
                         
                         const accountsRef = firebase.database().ref('accounts').child(resetUsername);
@@ -1364,8 +1375,6 @@ ${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
 
         // --- INITIALIZATION ---
         function init() {
-            // Đã chú thích (comment out) hàm này vì tài khoản đã được tạo trên Firebase
-            // initializeDefaultAccounts(); 
             initSelectOptions();
             populateCanCuFields([], '');
             populateCanCuFields([], 'sua-');
