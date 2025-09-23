@@ -417,7 +417,7 @@
         <input type="password" id="password" placeholder="Mật khẩu" value="admin1234" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
         <div class="forgot-password">
-            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu admin (super_admin) về 123456</a>
+            <a href="#" onclick="handleForgotPassword(); return false;">Quên mật khẩu?</a>
         </div>
         <div class="footer-login">
             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
@@ -432,7 +432,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -535,7 +535,7 @@
                 <textarea id="de_xuat"></textarea>
             </div>
             <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý đơn:</label>
                 <textarea id="ket_qua"></textarea>
             </div>
         </div>
@@ -647,7 +647,7 @@
                     <textarea id="sua-de_xuat"></textarea>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý:</label>
                     <textarea id="sua-ket_qua"></textarea>
                 </div>
             </div>
@@ -1573,7 +1573,7 @@
                 return;
             }
 
-            let csv = "STT,Ngày nhận,Phân loại,Thẩm quyền,Đơn vị nhập,Họ tên/ CQ/ TC,Nội dung (Tóm tắt),Kết quả (Trạng thái cuối cùng),Cán bộ phân công\n";
+            let csv = "STT,Ngày nhận,Phân loại,Thẩm quyền,Đơn vị nhập,Họ tên/ CQ/ TC,Nội dung (Tóm tắt),Kết quả xử lý,Cán bộ phân công\n";
 
             donsToExport.forEach((don, index) => {
                 csv += [
