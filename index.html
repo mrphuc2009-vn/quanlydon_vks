@@ -10,7 +10,7 @@
                  connect-src 'self' https://www.gstatic.com https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://*.jsdelivr.net;
                  img-src 'self' data: https://vienkiemsat.cantho.gov.vn;">
 
-    <title>Phần Mềm Quản Lý Đơn</title>
+    <title>Phần Mềm Quản Lý Đơn KN-TC</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -432,7 +432,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -491,6 +491,7 @@
             <div class="form-group">
                 <label for="tham_quyen">7. Thẩm quyền:</label>
                 <select id="tham_quyen">
+                    <option value="chọn">--chọn--</option>
                     <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
                     <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
                     <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
@@ -563,7 +564,7 @@
         </div>
 
         <div class="footer">
-            Bản quyền của Viện kiểm sát nhân dân thành phố Cần Thơ
+            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ | Phiên bản FIREBASE (Chia sẻ dữ liệu - 02 Cấp)
         </div>
     </div>
 
@@ -1696,11 +1697,27 @@
             const don = dons.find(d => d.id === id);
             if (!don) { alert('Không tìm thấy đơn.'); return; }
             
-            const today = formatDate(new Date().toISOString().slice(0, 10));
-            const [day, month, year] = today.split('/');
-            
-            const canCuText = getCanCuString(don.canCu).replace(/\;/g, ';\nTheo quy định tại');
-            const chucDanhText = roleDisplayNames[accounts[don.canBoPhanCong]?.role] || don.chucDanh || 'Chưa rõ';
+            const today = new Date();
+            const day = today.getDate();
+            const month = today.getMonth() + 1;
+            const year = today.getFullYear();
+
+            // Định dạng lại chuỗi Căn cứ để phù hợp với mẫu
+            const canCuData = getCanCuData('sua-');
+            let canCuText = '';
+            if (canCuData && canCuData.length > 0) {
+                canCuText = canCuData.map(item => {
+                    let parts = [];
+                    if (item.diem) parts.push(`điểm ${item.diem}`);
+                    if (item.dieu) parts.push(`khoản...Điều ${item.dieu}`);
+                    if (item.vb) parts.push(`${item.vb}`); 
+                    return parts.join(', ');
+                }).join('; ');
+                 canCuText = `Theo quy định tại ${canCuText} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 22/6/2023), Đơn nêu trên thuộc thẩm quyền giải quyết của Viện kiểm sát nhân dân thành phố Cần Thơ.`
+            } else {
+                 canCuText = 'Chưa có căn cứ pháp luật.'
+            }
+
 
             const proposalContent = `
 VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ
@@ -1711,29 +1728,38 @@ THANH TRA - KHIẾU TỐ
                                                         
                                             Cần Thơ, ngày ${day} tháng ${month} năm ${year}
 
-Mẫu số 07/KT 
+Mẫu số 07/KT
 (Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023)
 
 Kính gửi:
 - Lãnh đạo Viện;
 - Lãnh đạo Thanh tra - Khiếu tố.
 
-Tôi tên: ${don.canBoPhanCong || 'Kiểm sát viên'}, chức danh: ${chucDanhText};
-Được phân công nghiên cứu, đề xuất xử lý đối với đơn của ${don.hoTen}, 
-địa chỉ: ${don.diaChi}, ghi ngày ${formatDate(don.ngayGhi)} 
-(Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ngày ${formatDate(don.ngayNhan)} do ${don.nguonDon} chuyển đến).
-
-Đơn vị nhập: ${don.donVi}
+Tôi tên: ${don.canBoPhanCong || 'Kiểm sát viên'}, chức danh: ${don.chucDanh};
+Được phân công nghiên cứu, đề xuất xử lý đối với đơn của ${don.hoTen},
+địa chỉ: ${don.diaChi}, ghi ngày ${formatDate(don.ngayGhi)} (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ngày ${formatDate(don.ngayNhan)} do ${don.nguonDon} chuyển đến).
 
 Nội dung đơn: ${don.noiDung}
 
-Căn cứ: ${canCuText} 
+Căn cứ:
+${canCuText}
 
-${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
+${don.deXuat ? '\nTôi xin đề xuất: ' + don.deXuat + './.' : ''}
 
-                                                                 NGƯỜI ĐỀ XUẤT
-                                                                 (Ký, ghi rõ họ tên)
-                                                                 ${don.canBoPhanCong || 'Kiểm sát viên'}
+                                    NGƯỜI ĐỀ XUẤT
+                                    (Ký, ghi rõ họ tên)
+                                    ${don.canBoPhanCong || 'Kiểm sát viên'}
+-------------------------------------------------------------------------------------------------------------------------------------
+                                                        PHÊ DUYỆT CỦA LÃNH ĐẠO VIỆN
+                                            
+                                                                VIỆN TRƯỞNG
+                                                               (Ký, ghi rõ họ tên)
+                                                                Nguyễn Thanh Liêm
+                                            
+                                                        LÃNH ĐẠO ĐƠN VỊ ĐỀ XUẤT
+                                                        
+                                                        PHÓ CHÁNH THANH TRA
+                                                               (Ký, ghi rõ họ tên)
             `;
             
             document.getElementById('proposal-content').textContent = proposalContent.trim();
