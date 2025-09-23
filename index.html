@@ -157,7 +157,7 @@
         .top-buttons .logout-btn:hover { background-color: #c0392b; }
         .menu {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 10px;
             flex-wrap: wrap;
             margin-bottom: 10px;
@@ -452,7 +452,6 @@
                 <button id="export-report-btn" onclick="exportReport('all')">Xuất Báo cáo (.csv)</button>
             </div>
             
-            <button class="json-btn" onclick="downloadJSON()">Tải JSON (Backup)</button>
             <button class="account-btn" id="account-btn" onclick="showAccountsModal()" style="display: none;">Quản Lý Tài Khoản</button>
         </div>
 
@@ -561,7 +560,7 @@
         </div>
 
         <div class="footer">
-             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
+              <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
             <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
         </div>
     </div>
