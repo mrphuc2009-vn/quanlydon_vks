@@ -414,10 +414,10 @@
         <h2>Quản Lý Đơn</h2>
         <h3>ĐĂNG NHẬP</h3>
         <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
-        <input type="password" id="password" placeholder="Mật khẩu" value="admin1234" onkeypress="if(event.key === 'Enter') login()">
+        <input type="password" id="password" placeholder="Mật khẩu" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
         <div class="forgot-password">
-            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu tài khoản chủ về 123456</a>
+            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu tài khoản chủ</a>
         </div>
         <div class="footer-login">
             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
@@ -432,7 +432,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
+            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
         </div>
 
         <div class="menu">
@@ -563,8 +563,8 @@
         </div>
 
         <div class="footer">
-             <p>Đơn vị xây dựng: Viện kiểm sát nhân dân thành phố Cần Thơ</p>
-             <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
+            <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
+            <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
         </div>
     </div>
 
@@ -618,7 +618,7 @@
                 </div>
                  <div class="form-group">
                     <label for="sua-don_vi_nhap">8.1. Đơn vị nhập:</label>
-                    <select id="sua-don_vi_nhap" ${currentUser && currentUser.role !== 'owner' ? 'disabled' : ''}></select>
+                    <select id="sua-don_vi_nhap" ${currentUser && (currentUser.role !== 'owner' && currentUser.role !== 'city_manager' && currentUser.role !== 'district_manager') ? 'disabled' : ''}></select>
                 </div>
                 <div class="form-group">
                     <label for="sua-chuc_danh">9. Chức danh:</label>
@@ -666,10 +666,15 @@
                 <h3>Tạo Tài Khoản Mới</h3>
                 <input type="text" id="new-username" placeholder="Tên đăng nhập mới">
                 <input type="password" id="new-password" placeholder="Mật khẩu (Mặc định: 123456)">
-                <select id="new-role" style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px;">
+                <select id="new-role" style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px;" onchange="updateNewAccountUnitSelect()">
+                    <option value="">--Chọn Vai trò--</option>
+                    <option value="city_user">Người dùng cấp Thành phố</option>
+                    <option value="city_manager">Quản lý cấp Thành phố</option>
                     <option value="district_user">Người dùng cấp Khu vực</option>
-                    <option value="city_admin">Quản trị viên cấp Thành phố</option>
-                    <option value="owner">Tài khoản chủ</option>
+                    <option value="district_manager">Quản lý cấp Khu vực</option>
+                </select>
+                <select id="new-unit" style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px;">
+                    <option value="Thành phố">Thành phố</option>
                 </select>
                 <button class="save-btn" style="width: 100%;" onclick="createAccount()">Tạo Tài Khoản</button>
             </div>
@@ -756,7 +761,15 @@
                 'VKS Khu vực 11', 'VKS Khu vực 12', 'VKS Khu vực 13', 'VKS Khu vực 14'
             ]
         };
-
+        
+        // Bản đồ vai trò người dùng để hiển thị trong giao diện
+        const roleDisplayNames = {
+            'owner': 'Tài khoản chủ',
+            'city_manager': 'Quản lý cấp Thành phố',
+            'city_user': 'Người dùng cấp Thành phố',
+            'district_manager': 'Quản lý cấp Khu vực',
+            'district_user': 'Người dùng cấp Khu vực'
+        };
 
         // --- UTILITY FUNCTIONS ---
         
@@ -834,15 +847,18 @@
             }
 
             // Lọc theo quyền truy cập của người dùng
-            if (currentUser.role === 'district_user') {
+            if (currentUser.role.startsWith('district')) {
                 const userUnit = currentUser.donVi.toLowerCase(); 
                 // Người dùng cấp khu vực chỉ thấy đơn vị của mình HOẶC đơn có kết quả là đơn vị của họ
                 return filteredList.filter(d => 
                     d.donVi === currentUser.donVi || 
-                    (d.ketQua && d.ketQua.toLowerCase().includes(userUnit))
+                    (d.ketQua && d.ketQua.toLowerCase().includes(userUnit.substring(userUnit.indexOf('vks')))) // So khớp 'vks khu vực x'
                 );
+            } else if (currentUser.role.startsWith('city_')) {
+                // Người dùng cấp thành phố chỉ thấy đơn vị của mình
+                 return filteredList.filter(d => d.donVi === 'Thành phố');
             }
-            // Super Admin và City Admin thấy tất cả (sau khi đã lọc theo filterType)
+            // Super Admin thấy tất cả
             return filteredList;
         }
 
@@ -851,12 +867,26 @@
         
         // Khởi tạo tài khoản mặc định nếu chưa có
         function initializeDefaultAccounts() {
-             if (!accounts['tài khoản chủ']) {
-                 console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản 'tài khoản chủ'. Đang tạo tài khoản mặc định.");
-                 database.ref('accounts/tài khoản chủ').set({ password: '123456', role: 'owner', donVi: 'Thành phố' })
-                    .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'tài khoản chủ' mặc định (Pass: 123456)."))
-                    .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'tài khoản chủ' mặc định:", err));
-             }
+             const defaultAdminUser = 'admin';
+             const defaultAdminPass = 'VKSNDTPCT';
+             
+             database.ref('accounts').once('value')
+                 .then(snapshot => {
+                     const allAccounts = snapshot.val();
+                     if (!allAccounts || Object.keys(allAccounts).length === 0) {
+                         console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản. Đang tạo tài khoản chủ mặc định.");
+                         database.ref('accounts').set({
+                             [defaultAdminUser]: { 
+                                 password: defaultAdminPass, 
+                                 role: 'owner', 
+                                 donVi: 'Thành phố' 
+                            }
+                         })
+                         .then(() => console.log(`[SUCCESS] Đã tạo tài khoản chủ mặc định: ${defaultAdminUser} (Pass: ${defaultAdminPass}).`))
+                         .catch(err => console.error("[ERROR] Không thể tạo tài khoản mặc định:", err));
+                     }
+                 })
+                 .catch(err => console.error("[ERROR] Lỗi kiểm tra tài khoản mặc định:", err));
         }
         
         database.ref('dons').on('value', (snapshot) => {
@@ -895,7 +925,7 @@
                     currentUser.password = accountData.password; 
                     currentUser.donVi = accountData.donVi;
                     // Cập nhật giao diện nếu đang đăng nhập
-                    document.getElementById('account-btn').style.display = (currentUser.role === 'owner' || currentUser.role === 'city_admin') ? 'inline-block' : 'none';
+                    document.getElementById('account-btn').style.display = (currentUser.role === 'owner' || currentUser.role.endsWith('_manager')) ? 'inline-block' : 'none';
                     document.getElementById('don_vi_nhap').value = currentUser.donVi;
                  } else {
                     logout();
@@ -926,16 +956,16 @@
                 document.getElementById('main-container').classList.add('active');
                 
                 document.getElementById('username').value = '';
-                document.getElementById('password').value = 'admin1234'; 
+                document.getElementById('password').value = ''; 
                 
                 initSelectOptions();
                 
-                // Hiển thị nút quản lý tài khoản chỉ cho Tài khoản chủ và City Admin
-                document.getElementById('account-btn').style.display = (currentUser.role === 'owner' || currentUser.role === 'city_admin') ? 'inline-block' : 'none';
+                // Hiển thị nút quản lý tài khoản chỉ cho Tài khoản chủ và Quản lý
+                document.getElementById('account-btn').style.display = (currentUser.role === 'owner' || currentUser.role.endsWith('_manager')) ? 'inline-block' : 'none';
                 
                 clearForm();
                 
-                alert(`Đăng nhập thành công! Chào mừng ${user} (${currentUser.role}).`);
+                alert(`Đăng nhập thành công! Chào mừng ${user} (${roleDisplayNames[currentUser.role]}).`);
 
             } else {
                 console.error(`[LOGIN FAIL] Đăng nhập thất bại cho user: ${user}. Mật khẩu nhập vào: ${pass}. Mật khẩu trong DB: ${account ? account.password : 'Không tìm thấy tài khoản'}`);
@@ -979,17 +1009,15 @@
         }
         
         function handleForgotPassword() {
-            const resetUsername = 'tài khoản chủ'; 
-            const newPassword = '123456'; 
+            const resetUsername = 'admin'; 
+            const newPassword = 'VKSNDTPCT'; 
             
             if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
                 
                 firebase.database().ref('accounts').child(resetUsername).once('value')
                     .then(snapshot => {
                         if (!snapshot.exists()) {
-                            if (confirm(`Tài khoản '${resetUsername}' không tồn tại. Bạn có muốn tạo lại tài khoản này không?`)) {
-                                return firebase.database().ref('accounts').child(resetUsername).set({ password: newPassword, role: 'owner', donVi: 'Thành phố' });
-                            }
+                            alert(`Tài khoản '${resetUsername}' không tồn tại. Vui lòng liên hệ quản trị viên.`);
                             return; 
                         }
                         
@@ -1013,18 +1041,41 @@
         }
 
         function showAccountsModal() {
-            if (currentUser && (currentUser.role === 'owner' || currentUser.role === 'city_admin')) {
+            if (currentUser && (currentUser.role === 'owner' || currentUser.role.endsWith('_manager'))) {
                 updateAccountList();
+                updateNewAccountUnitSelect(); // Cập nhật danh sách đơn vị khi mở modal
                 document.getElementById('accountsModal').style.display = 'flex';
             } else {
                 alert('Bạn không có quyền quản lý tài khoản.');
             }
         }
         
-        // HÀM NÀY KHÔNG CÒN ĐƯỢC GỌI NỮA NHƯNG GIỮ LẠI ĐỂ TRÁNH LỖI
         function updateNewAccountUnitSelect() {
-             // Hàm này đã bị loại bỏ theo yêu cầu của bạn, không còn cần thiết
+             const newRole = document.getElementById('new-role').value;
+             const unitSelect = document.getElementById('new-unit');
+             unitSelect.innerHTML = '';
+             
+             if (newRole === 'city_user' || newRole === 'city_manager' || newRole === 'owner') {
+                 const option = document.createElement('option');
+                 option.value = 'Thành phố';
+                 option.textContent = 'Thành phố';
+                 unitSelect.appendChild(option);
+                 unitSelect.disabled = true;
+             } else if (newRole === 'district_user' || newRole === 'district_manager') {
+                 lookupData['Đơn vị'].forEach(item => {
+                     if (item !== 'Thành phố') {
+                         const option = document.createElement('option');
+                         option.value = item;
+                         option.textContent = item;
+                         unitSelect.appendChild(option);
+                     }
+                 });
+                 unitSelect.disabled = false;
+             } else {
+                 unitSelect.disabled = true;
+             }
         }
+
 
         // ĐÃ NÂNG CẤP ĐỂ TẠO CÁC NÚT RIÊNG CHO TỪNG TÀI KHOẢN
         function updateAccountList() {
@@ -1033,11 +1084,13 @@
             
             // Lọc tài khoản theo vai trò
             const ownerAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'owner').sort();
-            const cityAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'city_admin').sort();
-            const districtAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'district_user').sort();
-            
+            const cityManagerAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'city_manager').sort();
+            const cityUserAccounts = Object.keys(accounts).keys(accounts).filter(u => accounts[u].role === 'city_user').sort();
+            const districtManagerAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'district_manager').sort();
+            const districtUserAccounts = Object.keys(accounts).filter(u => accounts[u].role === 'district_user').sort();
+
             // Hàm render nhóm tài khoản
-            function renderAccountGroup(title, userList) {
+            function renderAccountGroup(title, userList, canManage = false) {
                 const groupDiv = document.createElement('div');
                 const h4 = document.createElement('h4');
                 h4.textContent = title;
@@ -1052,33 +1105,25 @@
                     const info = document.createElement('div');
                     info.className = 'info-group';
                     info.innerHTML = `
-                        <p><strong>Tên:</strong> ${username} (${acc.role})</p>
-                        <p><strong>Mật khẩu:</strong> ${acc.password}</p>
+                        <p><strong>Tên:</strong> ${username} (${roleDisplayNames[acc.role]})</p>
                         <p><strong>Đơn vị:</strong> ${acc.donVi}</p>
                     `;
                     li.appendChild(info);
 
                     const actionsDiv = document.createElement('div');
-
-                    // Nút Reset Mật khẩu
-                    if (currentUser.role === 'owner' || (currentUser.role === 'city_admin' && acc.role === 'district_user')) {
-                        const resetBtn = document.createElement('button');
-                        resetBtn.className = 'reset-btn';
-                        resetBtn.textContent = 'Reset Mật Khẩu';
-                        resetBtn.onclick = () => resetAccountPassword(username);
-                        actionsDiv.appendChild(resetBtn);
-                    }
                     
-                    // Nút Xóa (Không cho xóa Super Admin và tài khoản đang đăng nhập)
-                    if (username !== 'tài khoản chủ' && username !== currentUser.username) {
-                        // Chỉ Super Admin mới có quyền xóa tài khoản
-                        if (currentUser.role === 'owner') {
-                            const deleteBtn = document.createElement('button');
-                            deleteBtn.className = 'delete-btn';
-                            deleteBtn.textContent = 'Xóa';
-                            deleteBtn.onclick = () => deleteAccount(username);
-                            actionsDiv.appendChild(deleteBtn);
-                        }
+                    if (canManage) {
+                         const resetBtn = document.createElement('button');
+                         resetBtn.className = 'reset-btn';
+                         resetBtn.textContent = 'Reset Mật Khẩu';
+                         resetBtn.onclick = () => resetAccountPassword(username);
+                         actionsDiv.appendChild(resetBtn);
+
+                         const deleteBtn = document.createElement('button');
+                         deleteBtn.className = 'delete-btn';
+                         deleteBtn.textContent = 'Xóa';
+                         deleteBtn.onclick = () => deleteAccount(username);
+                         actionsDiv.appendChild(deleteBtn);
                     }
                     li.appendChild(actionsDiv);
                     ul.appendChild(li);
@@ -1088,34 +1133,49 @@
             }
             
             // Phân chia và hiển thị
-            renderAccountGroup('Tài khoản Chủ', ownerAccounts);
-            renderAccountGroup('Tài khoản Cấp Thành phố', cityAccounts);
-            renderAccountGroup('Tài khoản Cấp Khu vực', districtAccounts);
+            const canManage = (currentUser.role === 'owner' || currentUser.role.endsWith('_manager'));
+            
+            if (currentUser.role === 'owner') {
+                renderAccountGroup('Tài khoản Chủ', ownerAccounts, false);
+                renderAccountGroup('Tài khoản Quản lý cấp Thành phố', cityManagerAccounts, true);
+                renderAccountGroup('Tài khoản Người dùng cấp Thành phố', cityUserAccounts, true);
+                renderAccountGroup('Tài khoản Quản lý cấp Khu vực', districtManagerAccounts, true);
+                renderAccountGroup('Tài khoản Người dùng cấp Khu vực', districtUserAccounts, true);
+            } else if (currentUser.role === 'city_manager') {
+                renderAccountGroup('Tài khoản Quản lý cấp Thành phố', cityManagerAccounts, false);
+                renderAccountGroup('Tài khoản Người dùng cấp Thành phố', cityUserAccounts, true);
+            } else if (currentUser.role === 'district_manager') {
+                 renderAccountGroup('Tài khoản Quản lý cấp Khu vực', districtManagerAccounts, false);
+                 renderAccountGroup('Tài khoản Người dùng cấp Khu vực', districtUserAccounts, true);
+            }
+
         }
 
         function createAccount() {
-            // Chỉ Tài khoản chủ mới có quyền tạo mọi loại tài khoản
-            if (currentUser.role !== 'owner') {
-                alert('Bạn không có quyền tạo tài khoản.');
-                return;
-            }
-
             const user = document.getElementById('new-username').value.trim();
             const pass = document.getElementById('new-password').value || '123456';
             const role = document.getElementById('new-role').value;
-            let donVi;
-
-            // Tự động gán đơn vị dựa trên vai trò
-            if (role === 'owner' || role === 'city_admin') {
-                donVi = 'Thành phố';
-            } else if (role === 'district_user') {
-                // Lấy đơn vị VKS khu vực đầu tiên từ lookupData
-                donVi = lookupData['Đơn vị'].find(unit => unit.startsWith('VKS Khu vực')) || 'VKS Khu vực 1';
+            const donVi = document.getElementById('new-unit').value;
+            
+            if (!user) { alert('Tên đăng nhập không được để trống.'); return; }
+            if (accounts[user]) { alert('Tên đăng nhập đã tồn tại.'); return; }
+            if (!role) { alert('Vui lòng chọn vai trò.'); return; }
+            if (!donVi) { alert('Vui lòng chọn đơn vị.'); return; }
+            
+            // Logic phân quyền tạo tài khoản
+            let canCreate = false;
+            if (currentUser.role === 'owner') {
+                canCreate = true;
+            } else if (currentUser.role === 'city_manager' && (role === 'city_user' || role === 'city_manager')) {
+                canCreate = true;
+            } else if (currentUser.role === 'district_manager' && (role === 'district_user' || role === 'district_manager')) {
+                canCreate = true;
             }
 
-            if (user === '') { alert('Tên đăng nhập không được để trống.'); return; }
-            if (accounts[user]) { alert('Tên đăng nhập đã tồn tại.'); return; }
-            if (!donVi) { alert('Lỗi: Không thể xác định đơn vị cho vai trò này.'); return; }
+            if (!canCreate) {
+                alert('Bạn không có quyền tạo tài khoản cho vai trò này.');
+                return;
+            }
 
             const newAccount = { password: pass, role: role, donVi: donVi };
             database.ref(`accounts/${user}`).set(newAccount)
@@ -1133,8 +1193,18 @@
              const accountToReset = accounts[username];
              if (!accountToReset) return;
              
-             // Chỉ Tài khoản chủ có thể reset mọi tài khoản. City Admin chỉ có thể reset District User
-             if (currentUser.role !== 'owner' && !(currentUser.role === 'city_admin' && accountToReset.role === 'district_user')) {
+             if (username === 'admin') {
+                 alert('Không thể đặt lại mật khẩu của tài khoản chủ từ đây. Vui lòng sử dụng chức năng "Đặt lại mật khẩu tài khoản chủ" trên màn hình đăng nhập.');
+                 return;
+             }
+
+             if (currentUser.role === 'owner') {
+                 // Owner có thể reset tất cả
+             } else if (currentUser.role === 'city_manager' && (accountToReset.role.startsWith('city_'))) {
+                 // City Manager có thể reset City User và City Manager
+             } else if (currentUser.role === 'district_manager' && accountToReset.role.startsWith('district_')) {
+                 // District Manager có thể reset District User và District Manager
+             } else {
                  alert('Bạn không có quyền đặt lại mật khẩu cho tài khoản này.');
                  return;
              }
@@ -1154,12 +1224,33 @@
         }
 
         function deleteAccount(username) {
-            // Chỉ Tài khoản chủ mới có quyền xóa
-            if (currentUser.role !== 'owner') {
-                alert('Bạn không có quyền xóa tài khoản.');
-                return;
-            }
-            
+             if (username === currentUser.username) {
+                 alert('Không thể tự xóa tài khoản của mình.');
+                 return;
+             }
+             if (username === 'admin') {
+                 alert('Không thể xóa tài khoản chủ.');
+                 return;
+             }
+             
+             const accountToDelete = accounts[username];
+             if (!accountToDelete) return;
+             
+             // Logic phân quyền xóa tài khoản
+             let canDelete = false;
+             if (currentUser.role === 'owner') {
+                 canDelete = true;
+             } else if (currentUser.role === 'city_manager' && accountToDelete.donVi === 'Thành phố') {
+                 canDelete = true;
+             } else if (currentUser.role === 'district_manager' && accountToDelete.donVi !== 'Thành phố') {
+                 canDelete = true;
+             }
+             
+             if (!canDelete) {
+                 alert('Bạn không có quyền xóa tài khoản này.');
+                 return;
+             }
+             
             if (confirm(`Bạn có chắc chắn muốn xóa tài khoản ${username}?`)) {
                 database.ref(`accounts/${username}`).remove()
                     .then(() => {
@@ -1217,10 +1308,10 @@
             // Nếu là form chính, gán đơn vị của người dùng và khóa lại
             if (prefix === '' && currentUser) {
                 document.getElementById('don_vi_nhap').value = currentUser.donVi;
-                document.getElementById('don_vi_nhap').disabled = (currentUser.role !== 'owner');
+                document.getElementById('don_vi_nhap').disabled = (currentUser.role === 'owner' || currentUser.role.endsWith('_manager'));
             } else if (prefix === 'sua-' && currentUser) {
-                 // Chỉ Tài khoản chủ mới được sửa đơn vị
-                document.getElementById('sua-don_vi_nhap').disabled = (currentUser.role !== 'owner');
+                 // Chỉ Tài khoản chủ và Quản lý mới được sửa đơn vị
+                document.getElementById('sua-don_vi_nhap').disabled = !(currentUser.role === 'owner' || currentUser.role.endsWith('_manager'));
             }
         }
         
@@ -1327,10 +1418,10 @@
             document.getElementById('ket_qua').value = '';
             
             // Gán giá trị mặc định theo người dùng
-            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : 'Kiểm sát viên A'; 
-            document.getElementById('chuc_danh').value = currentUser ? (currentUser.role === 'owner' ? 'Tài khoản chủ' : (currentUser.role === 'city_admin' ? 'Quản trị viên TP' : 'Kiểm sát viên')) : 'Kiểm sát viên'; 
+            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : ''; 
+            document.getElementById('chuc_danh').value = currentUser ? roleDisplayNames[currentUser.role] : ''; 
             document.getElementById('don_vi_nhap').value = currentUser ? currentUser.donVi : 'Thành phố';
-            document.getElementById('don_vi_nhap').disabled = (currentUser.role !== 'owner'); // Khóa trừ khi là Tài khoản chủ
+            document.getElementById('don_vi_nhap').disabled = (currentUser.role !== 'owner' && !currentUser.role.endsWith('_manager')); // Khóa trừ khi là Tài khoản chủ hoặc Quản lý
             
             document.getElementById('noi_chuyen_don').value = '';
             document.getElementById('ngay_chuyen_don').value = '';
@@ -1384,14 +1475,20 @@
             if (!don) { alert('Không tìm thấy đơn (ID lỗi).'); return; }
             
             // LOGIC BẢO MẬT ĐÃ CẬP NHẬT: Cho phép sửa nếu thuộc đơn vị hoặc kết quả liên quan
-            if (currentUser.role === 'district_user') {
+            if (currentUser.role.startsWith('district_')) {
                 const userUnit = currentUser.donVi.toLowerCase();
-                const canEdit = don.donVi === currentUser.donVi || (don.ketQua && don.ketQua.toLowerCase().includes(userUnit));
+                const canEdit = don.donVi === currentUser.donVi || (don.ketQua && don.ketQua.toLowerCase().includes(userUnit.substring(userUnit.indexOf('vks'))));
                 if (!canEdit) {
                     alert('Bạn chỉ có quyền sửa đơn của đơn vị mình hoặc đơn có đề cập đến đơn vị của bạn ở mục Kết quả.');
                     return;
                 }
+            } else if (currentUser.role.startsWith('city_')) {
+                 if (don.donVi !== 'Thành phố') {
+                     alert('Bạn chỉ có quyền sửa đơn của cấp thành phố.');
+                     return;
+                 }
             }
+
 
             document.getElementById('editModal').style.display = 'flex';
             document.getElementById('edit-id').value = id;
@@ -1435,7 +1532,7 @@
                 ketQua: document.getElementById('sua-ket_qua').value,
                 canBoPhanCong: document.getElementById('sua-can_bo_phan_cong').value,
                 chucDanh: document.getElementById('sua-chuc_danh').value,
-                donVi: document.getElementById('sua-don_vi_nhap').value, // Lấy giá trị đã sửa (Chỉ Tài khoản chủ mới sửa được)
+                donVi: document.getElementById('sua-don_vi_nhap').value, // Lấy giá trị đã sửa (Chỉ Tài khoản chủ và Quản lý mới sửa được)
                 noiChuyenDon: document.getElementById('sua-noi_chuyen_don').value,
                 ngayChuyenDon: document.getElementById('sua-ngay_chuyen_don').value,
                 lastUpdated: new Date().toISOString()
@@ -1454,13 +1551,18 @@
              if (!don) { return; }
              
              // LOGIC BẢO MẬT ĐÃ CẬP NHẬT: Cho phép xóa nếu thuộc đơn vị hoặc kết quả liên quan
-             if (currentUser.role === 'district_user') {
+             if (currentUser.role.startsWith('district_')) {
                 const userUnit = currentUser.donVi.toLowerCase();
-                const canDelete = don.donVi === currentUser.donVi || (don.ketQua && don.ketQua.toLowerCase().includes(userUnit));
+                const canDelete = don.donVi === currentUser.donVi || (don.ketQua && don.ketQua.toLowerCase().includes(userUnit.substring(userUnit.indexOf('vks'))));
                 if (!canDelete) {
                     alert('Bạn chỉ có quyền xóa đơn của đơn vị mình hoặc đơn có đề cập đến đơn vị của bạn ở mục Kết quả.');
                     return;
                 }
+             } else if (currentUser.role.startsWith('city_')) {
+                 if (don.donVi !== 'Thành phố') {
+                      alert('Bạn chỉ có quyền xóa đơn của cấp thành phố.');
+                     return;
+                 }
              }
              
             if (confirm('Bạn có chắc chắn muốn xóa đơn này?')) {
@@ -1601,6 +1703,7 @@
             const [day, month, year] = today.split('/');
             
             const canCuText = getCanCuString(don.canCu).replace(/\;/g, ';\nTheo quy định tại');
+            const chucDanhText = roleDisplayNames[accounts[don.canBoPhanCong]?.role] || don.chucDanh || 'Chưa rõ';
 
             const proposalContent = `
 VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ
@@ -1618,7 +1721,7 @@ Kính gửi:
 - Lãnh đạo Viện;
 - Lãnh đạo Thanh tra - Khiếu tố.
 
-Tôi tên: ${don.canBoPhanCong || 'Kiểm sát viên'}, chức danh: ${don.chucDanh || 'Chưa rõ'};
+Tôi tên: ${don.canBoPhanCong || 'Kiểm sát viên'}, chức danh: ${chucDanhText};
 Được phân công nghiên cứu, đề xuất xử lý đối với đơn của ${don.hoTen}, 
 địa chỉ: ${don.diaChi}, ghi ngày ${formatDate(don.ngayGhi)} 
 (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ngày ${formatDate(don.ngayNhan)} do ${don.nguonDon} chuyển đến).
