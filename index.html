@@ -10,7 +10,7 @@
                  connect-src 'self' https://www.gstatic.com https://*.googleapis.com https://*.firebaseio.com https://*.firebasedatabase.app wss://*.firebaseio.com wss://*.firebasedatabase.app https://*.jsdelivr.net;
                  img-src 'self' data: https://vienkiemsat.cantho.gov.vn;">
 
-    <title>Phần Mềm Quản Lý Đơn Khiếu nại - Tố cáo</title>
+    <title>Phần Mềm Quản Lý Đơn KN-TC</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -417,7 +417,7 @@
         <input type="password" id="password" placeholder="Mật khẩu" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
         <div class="forgot-password">
-            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu?</a>
+            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu</a>
         </div>
         <div class="footer-login">
             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
@@ -432,7 +432,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -563,8 +563,7 @@
         </div>
 
         <div class="footer">
-            <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
-            <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
+            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ | Phiên bản FIREBASE (Chia sẻ dữ liệu - 02 Cấp)
         </div>
     </div>
 
@@ -1008,31 +1007,35 @@
                 });
         }
         
-        function // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI)
-function handleForgotPassword() {
-    const resetUsername = 'admin'; 
-    const newPassword = 'VKSNDTPCT'; 
-       if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
-        const accountsRef = firebase.database().ref('accounts');
-     // Sử dụng .update() trên đường dẫn cha để đảm bảo tài khoản được tạo nếu chưa tồn tại
-        accountsRef.child(resetUsername).update({ 
-            password: newPassword,
-            role: 'admin' 
-        })
-        .then(() => {
-            alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng sử dụng mật khẩu này để đăng nhập.`);
+        // START: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU (ĐÃ SỬA LỖI)
+        function handleForgotPassword() {
+            const resetUsername = 'admin'; 
+            // Đã cập nhật mật khẩu mới theo yêu cầu của bạn
+            const newPassword = 'VKSNDTPCT'; 
             
-            // Cập nhật giao diện đăng nhập
-            document.getElementById('username').value = resetUsername;
-            document.getElementById('password').value = newPassword;
-            document.getElementById('loginModal').style.display = 'none';
-        })
-        .catch((error) => {
-            alert("Lỗi khi đặt lại mật khẩu: " + error.message);
-        });
-    }
-}
-// END: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU
+            if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu của tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
+                
+                const accountsRef = firebase.database().ref('accounts');
+                
+                // Sử dụng .update() trên đường dẫn con để đảm bảo tài khoản được tạo nếu chưa tồn tại
+                accountsRef.child(resetUsername).update({ 
+                    password: newPassword,
+                    role: 'owner', // Đảm bảo tài khoản được tạo với vai trò chủ
+                    donVi: 'Thành phố' // Đảm bảo tài khoản có đơn vị mặc định
+                })
+                .then(() => {
+                    alert(`Đặt lại mật khẩu thành công! Mật khẩu mới của ${resetUsername} là: ${newPassword}. Vui lòng sử dụng mật khẩu này để đăng nhập.`);
+                    
+                    // Cập nhật giao diện đăng nhập
+                    document.getElementById('username').value = resetUsername;
+                    document.getElementById('password').value = newPassword;
+                })
+                .catch((error) => {
+                    alert("Lỗi khi đặt lại mật khẩu: " + error.message);
+                });
+            }
+        }
+        // END: CHỨC NĂNG ĐẶT LẠI MẬT KHẨU
 
         function showAccountsModal() {
             if (currentUser && (currentUser.role === 'owner' || currentUser.role.endsWith('_manager'))) {
@@ -1188,7 +1191,7 @@ function handleForgotPassword() {
              if (!accountToReset) return;
              
              if (username === 'admin') {
-                 alert('Không thể đặt lại mật khẩu của tài khoản chủ từ đây. Vui lòng sử dụng chức năng "Đặt lại mật khẩu tài khoản chủ" trên màn hình đăng nhập.');
+                 alert('Không thể đặt lại mật khẩu của tài khoản chủ từ đây. Vui lòng sử dụng chức năng "Đặt lại mật khẩu" trên màn hình đăng nhập.');
                  return;
              }
 
@@ -1559,7 +1562,7 @@ function handleForgotPassword() {
                  }
              }
              
-            if (confirm('Bạn có chắc chắn muốn xóa đơn này?')) {
+            if (confirm(`Bạn có chắc chắn muốn xóa đơn này?`)) {
                 database.ref('dons/' + id).remove()
                     .then(() => {
                         alert('Đã xóa đơn!');
