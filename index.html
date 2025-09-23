@@ -854,13 +854,13 @@
              }
              if (!accounts['city_user']) {
                  console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản 'city_user'. Đang tạo tài khoản mặc định.");
-                 database.ref('accounts/city_user').set({ password: '123456', role: 'city_admin', donVi: 'Thành phố' })
+                 database.ref('accounts/city_user').set({ password: '123456', role: 'city_admin', donVi: 'Quản lý cấp Thành phố' })
                     .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'city_user' (Pass: 123456)."))
                     .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'city_user' mặc định:", err));
              }
               if (!accounts['huyen_user']) {
                  console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản 'huyen_user'. Đang tạo tài khoản mặc định.");
-                 database.ref('accounts/huyen_user').set({ password: '123456', role: 'district_user', donVi: 'VKS KV 1 (Ninh Kiều)' })
+                 database.ref('accounts/huyen_user').set({ password: '123456', role: 'district_user', donVi: 'Quản lý cấp khu vực' })
                     .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'huyen_user' (Pass: 123456)."))
                     .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'huyen_user' mặc định:", err));
              }
