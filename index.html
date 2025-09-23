@@ -167,7 +167,7 @@
             border-bottom: 1px solid #eee;
         }
         .menu button, .menu .export-control select, .menu .export-control button {
-            padding: 10px 15px;
+            padding: 10px 15px; /* Đồng nhất padding */
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -205,12 +205,13 @@
         }
         .export-control select:hover { background-color: #dce0e2; }
         .export-control button {
-            background-color: #2980b9;
+            background-color: #2980b9; /* Đồng nhất màu */
             flex: 1;
             min-width: 80px;
             max-width: 150px;
-            padding: 8px 12px;
-            font-weight: bold; /* Làm rõ hơn màu sắc */
+            padding: 10px 15px; /* Đồng nhất padding */
+            font-weight: bold; 
+            color: white;
         }
         .export-control button:hover { background-color: #2471a3; }
 
@@ -441,7 +442,7 @@
                 <select id="export-list-filter" onchange="updateExportButton('list')">
                     <option value="all">Danh sách: 02 cấp (Tổng hợp)</option>
                     <option value="city">Danh sách: Cấp Thành phố</option>
-                    <option value="district">Danh sách: Cấp Huyện</option>
+                    <option value="district">Danh sách: Cấp Khu vực</option>
                 </select>
                 <button id="export-list-btn" onclick="exportList('all')">Xuất Danh sách (.csv)</button>
             </div>
@@ -450,7 +451,7 @@
                 <select id="export-report-filter" onchange="updateExportButton('report')">
                     <option value="all">Báo cáo: 02 cấp (Tổng hợp)</option>
                     <option value="city">Báo cáo: Cấp Thành phố</option>
-                    <option value="district">Báo cáo: Cấp Huyện</option>
+                    <option value="district">Báo cáo: Cấp Khu vực</option>
                 </select>
                 <button id="export-report-btn" onclick="exportReport('all')">Xuất Báo cáo (.csv)</button>
             </div>
@@ -520,7 +521,7 @@
                 <input type="date" id="ngay_chuyen_don">
             </div>
             <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
+                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (văn bản quy định pháp luật):</label>
                 <div id="can_cu_container" style="width: 100%;">
                     </div>
                 <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu()">Thêm Căn cứ</button>
@@ -562,7 +563,7 @@
         </div>
 
         <div class="footer">
-              <p>Tác giả phần mềm: Viện kiểm sát nhân dân thành phố Cần Thơ</p>
+            <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
             <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
         </div>
     </div>
@@ -632,7 +633,7 @@
                     <input type="date" id="sua-ngay_chuyen_don">
                 </div>
                 <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
+                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (văn bản quy định pháp luật):</label>
                     <div id="sua-can_cu_container" style="width: 100%;">
                     </div>
                     <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu('sua-')">Thêm Căn cứ</button>
@@ -665,12 +666,11 @@
                 <h3>Tạo Tài Khoản Mới</h3>
                 <input type="text" id="new-username" placeholder="Tên đăng nhập mới">
                 <input type="password" id="new-password" placeholder="Mật khẩu (Mặc định: 123456)">
-                <select id="new-role" onchange="updateNewAccountUnitSelect()" style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px;">
-                    <option value="district_user">Người dùng cấp Huyện</option>
+                <select id="new-role" style="width: 100%; margin: 10px 0; padding: 10px; border-radius: 8px;">
+                    <option value="district_user">Người dùng cấp Khu vực</option>
                     <option value="city_admin">Quản trị viên cấp Thành phố</option>
                     <option value="super_admin">Quản trị viên Chủ</option>
                 </select>
-                <select id="new-don-vi" style="width: 100%; margin-bottom: 10px; padding: 10px; border-radius: 8px;"></select>
                 <button class="save-btn" style="width: 100%;" onclick="createAccount()">Tạo Tài Khoản</button>
             </div>
             <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('accountsModal').style.display = 'none';">Đóng</button>
@@ -722,22 +722,25 @@
         let currentUser = null;
         let canCuCount = 1;
 
-        // Dữ liệu danh mục ĐÃ CẬP NHẬT MỤC "Nơi chuyển đơn"
+        // Dữ liệu danh mục ĐÃ CẬP NHẬT MỤC "Nơi chuyển đơn" và "Đơn vị"
         const lookupData = {
             'Nguồn đơn': [
                 'Bưu điện', 'Tiếp dân', 'Các cơ quan Đảng, Nhà nước', 
                 'Cục ĐT, VKSTC', 'V12, VKSTC', 'Cơ quan NN', 'Thành ủy'
             ].sort(),
             'Nơi chuyển đơn': [
-                'THADS TP.CT', 'TAND TP.CT', 'TAND KV 1 (Ninh Kiều)', 'TAND KV 2 (Cái Răng)',
-                'TAND KV 3 (Bình Thủy)', 'TAND KV 4 (Ô Môn)', 'TAND KV 5 (Thốt Nốt)', 
-                'TAND KV 6 (Cờ Đỏ)', 'TAND KV 7 (Phong Điền)', 'TAND KV 8 (Vĩnh Thạnh)',
-                'TAND KV 9 (Thới Lai)', 'CQCSĐT TP.CT', 'CQCSĐT KV 1', 'CQCSĐT KV 2',
-                'CQCSĐT KV 3', 'CQCSĐT KV 4', 'CQCSĐT KV 5', 'CQCSĐT KV 6', 'CQCSĐT KV 7',
-                'CQCSĐT KV 8', 'CQCSĐT KV 9', 'VKS KV 1 (Ninh Kiều)', 'VKS KV 2 (Cái Răng)',
-                'VKS KV 3 (Bình Thủy)', 'VKS KV 4 (Ô Môn)', 'VKS KV 5 (Thốt Nốt)', 
-                'VKS KV 6 (Cờ Đỏ)', 'VKS KV 7 (Phong Điền)', 'VKS KV 8 (Vĩnh Thạnh)',
-                'VKS KV 9 (Thới Lai)', 'Khác (Ghi rõ trong Kết quả)'
+                'THADS TP.CT', 'TAND TP.CT', 'CQCSĐT TP.CT', 
+                'Khác (Ghi rõ trong Kết quả)',
+                // 14 khu vực mới
+                'TAND Khu vực 1', 'TAND Khu vực 2', 'TAND Khu vực 3', 'TAND Khu vực 4', 'TAND Khu vực 5',
+                'TAND Khu vực 6', 'TAND Khu vực 7', 'TAND Khu vực 8', 'TAND Khu vực 9', 'TAND Khu vực 10',
+                'TAND Khu vực 11', 'TAND Khu vực 12', 'TAND Khu vực 13', 'TAND Khu vực 14',
+                'CQCSĐT Khu vực 1', 'CQCSĐT Khu vực 2', 'CQCSĐT Khu vực 3', 'CQCSĐT Khu vực 4', 'CQCSĐT Khu vực 5',
+                'CQCSĐT Khu vực 6', 'CQCSĐT Khu vực 7', 'CQCSĐT Khu vực 8', 'CQCSĐT Khu vực 9', 'CQCSĐT Khu vực 10',
+                'CQCSĐT Khu vực 11', 'CQCSĐT Khu vực 12', 'CQCSĐT Khu vực 13', 'CQCSĐT Khu vực 14',
+                'VKS Khu vực 1', 'VKS Khu vực 2', 'VKS Khu vực 3', 'VKS Khu vực 4', 'VKS Khu vực 5',
+                'VKS Khu vực 6', 'VKS Khu vực 7', 'VKS Khu vực 8', 'VKS Khu vực 9', 'VKS Khu vực 10',
+                'VKS Khu vực 11', 'VKS Khu vực 12', 'VKS Khu vực 13', 'VKS Khu vực 14',
             ].sort(),
             'Phân loại': [
                 'Khiếu nại', 'Tố cáo', 'Kiến nghị/Phản ánh/Khác', 
@@ -747,9 +750,10 @@
             // Đã thêm danh mục đơn vị theo yêu cầu
             'Đơn vị': [
                 'Thành phố', // Đơn vị cấp TP (phòng ban/Thanh tra)
-                'VKS KV 1 (Ninh Kiều)', 'VKS KV 2 (Cái Răng)', 'VKS KV 3 (Bình Thủy)', 
-                'VKS KV 4 (Ô Môn)', 'VKS KV 5 (Thốt Nốt)', 'VKS KV 6 (Cờ Đỏ)', 
-                'VKS KV 7 (Phong Điền)', 'VKS KV 8 (Vĩnh Thạnh)', 'VKS KV 9 (Thới Lai)' // Các đơn vị cấp huyện
+                // 14 khu vực mới
+                'VKS Khu vực 1', 'VKS Khu vực 2', 'VKS Khu vực 3', 'VKS Khu vực 4', 'VKS Khu vực 5',
+                'VKS Khu vực 6', 'VKS Khu vực 7', 'VKS Khu vực 8', 'VKS Khu vực 9', 'VKS Khu vực 10',
+                'VKS Khu vực 11', 'VKS Khu vực 12', 'VKS Khu vực 13', 'VKS Khu vực 14'
             ]
         };
 
@@ -831,8 +835,8 @@
 
             // Lọc theo quyền truy cập của người dùng
             if (currentUser.role === 'district_user') {
-                const userUnit = currentUser.donVi.toLowerCase(); // Chuyển sang chữ thường để so sánh không phân biệt hoa thường
-                // Người dùng cấp huyện chỉ thấy đơn vị của mình HOẶC đơn có kết quả là đơn vị của họ
+                const userUnit = currentUser.donVi.toLowerCase(); 
+                // Người dùng cấp khu vực chỉ thấy đơn vị của mình HOẶC đơn có kết quả là đơn vị của họ
                 return filteredList.filter(d => 
                     d.donVi === currentUser.donVi || 
                     (d.ketQua && d.ketQua.toLowerCase().includes(userUnit))
@@ -859,11 +863,11 @@
                     .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'city_admin' (Pass: 123456)."))
                     .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'city_admin' mặc định:", err));
              }
-              if (!accounts['huyen_user']) {
-                 console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản 'huyen_user'. Đang tạo tài khoản mặc định.");
-                 database.ref('accounts/huyen_user').set({ password: '123456', role: 'district_user', donVi: 'VKS KV 1 (Ninh Kiều)' })
-                    .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'huyen_user' (Pass: 123456)."))
-                    .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'huyen_user' mặc định:", err));
+              if (!accounts['khuvuc_user']) {
+                 console.warn("[ACCOUNT WARNING] Không tìm thấy tài khoản 'khuvuc_user'. Đang tạo tài khoản mặc định.");
+                 database.ref('accounts/khuvuc_user').set({ password: '123456', role: 'district_user', donVi: 'VKS Khu vực 1' })
+                    .then(() => console.log("[SUCCESS] Đã tạo tài khoản 'khuvuc_user' (Pass: 123456)."))
+                    .catch(err => console.error("[ERROR] Không thể tạo tài khoản 'khuvuc_user' mặc định:", err));
              }
         }
         
@@ -1023,33 +1027,15 @@
         function showAccountsModal() {
             if (currentUser && (currentUser.role === 'super_admin' || currentUser.role === 'city_admin')) {
                 updateAccountList();
-                updateNewAccountUnitSelect(); // Khởi tạo dropdown đơn vị khi mở modal
                 document.getElementById('accountsModal').style.display = 'flex';
             } else {
                 alert('Bạn không có quyền quản lý tài khoản.');
             }
         }
         
+        // HÀM NÀY KHÔNG CÒN ĐƯỢC GỌI NỮA NHƯNG GIỮ LẠI ĐỂ TRÁNH LỖI
         function updateNewAccountUnitSelect() {
-             const role = document.getElementById('new-role').value;
-             const donViSelect = document.getElementById('new-don-vi');
-             donViSelect.innerHTML = '';
-             
-             if (role === 'super_admin' || role === 'city_admin') {
-                 // Gán cố định là "Thành phố"
-                 const option = document.createElement('option');
-                 option.value = 'Thành phố';
-                 option.textContent = 'Thành phố';
-                 donViSelect.appendChild(option);
-             } else {
-                 // Cho phép chọn các đơn vị cấp huyện
-                 lookupData['Đơn vị'].filter(dv => dv !== 'Thành phố').forEach(unit => {
-                     const option = document.createElement('option');
-                     option.value = unit;
-                     option.textContent = unit;
-                     donViSelect.appendChild(option);
-                 });
-             }
+             // Hàm này đã bị loại bỏ theo yêu cầu của bạn, không còn cần thiết
         }
 
         // ĐÃ NÂNG CẤP ĐỂ TẠO CÁC NÚT RIÊNG CHO TỪNG TÀI KHOẢN
@@ -1114,7 +1100,7 @@
             
             // Phân chia và hiển thị
             renderAccountGroup('Tài khoản Cấp Thành phố (Super Admin / City Admin)', cityAccounts);
-            renderAccountGroup('Tài khoản Cấp Huyện (District User)', districtAccounts);
+            renderAccountGroup('Tài khoản Cấp Khu vực (District User)', districtAccounts);
         }
 
         function createAccount() {
@@ -1127,11 +1113,19 @@
             const user = document.getElementById('new-username').value.trim();
             const pass = document.getElementById('new-password').value || '123456';
             const role = document.getElementById('new-role').value;
-            const donVi = document.getElementById('new-don-vi').value;
+            let donVi;
+
+            // Tự động gán đơn vị dựa trên vai trò
+            if (role === 'super_admin' || role === 'city_admin') {
+                donVi = 'Thành phố';
+            } else if (role === 'district_user') {
+                // Lấy đơn vị VKS khu vực đầu tiên từ lookupData
+                donVi = lookupData['Đơn vị'].find(unit => unit.startsWith('VKS Khu vực')) || 'VKS Khu vực 1';
+            }
 
             if (user === '') { alert('Tên đăng nhập không được để trống.'); return; }
             if (accounts[user]) { alert('Tên đăng nhập đã tồn tại.'); return; }
-            if (donVi === '') { alert('Vui lòng chọn Đơn vị.'); return; }
+            if (!donVi) { alert('Lỗi: Không thể xác định đơn vị cho vai trò này.'); return; }
 
             const newAccount = { password: pass, role: role, donVi: donVi };
             database.ref(`accounts/${user}`).set(newAccount)
@@ -1191,7 +1185,6 @@
         // --- 4. FORM AND DATA MANAGEMENT ---
         
         function initSelectOptions(prefix = '') {
-            // ... (Khởi tạo các select box khác)
             const nguonDonSelect = document.getElementById(prefix + 'nguon_don');
             const noiChuyenDonSelect = document.getElementById(prefix + 'noi_chuyen_don');
             const phanLoaiSelect = document.getElementById(prefix + 'phan_loai');
@@ -1528,7 +1521,7 @@
              
              if (filter === 'all') text = '02 cấp (Tổng hợp)';
              else if (filter === 'city') text = 'Cấp Thành phố';
-             else if (filter === 'district') text = 'Cấp Huyện';
+             else if (filter === 'district') text = 'Cấp Khu vực';
              
              button.textContent = `Xuất ${type === 'list' ? 'Danh sách' : 'Báo cáo'} (${text}) (.csv)`;
              
