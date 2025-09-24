@@ -685,21 +685,31 @@
         };
 
         // --- AUTHENTICATION FUNCTIONS ---
+        // --- AUTHENTICATION FUNCTIONS (ĐÃ SỬA LỖI ĐĂNG NHẬP) ---
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            if (accounts[username] && accounts[username].password === password) {
-                currentUser = { username: username, role: accounts[username].role, unit: accounts[username].unit };
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'flex';
-                document.getElementById('can_bo_phan_cong').value = currentUser.username;
-                if (currentUser.role === 'admin') {
-                    document.getElementById('account-btn').style.display = 'block';
-                }
-                updateTable();
-            } else {
-                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
-            }
+
+            // Sử dụng .once() để đảm bảo dữ liệu được lấy về trước khi xử lý
+            database.ref('accounts').once('value')
+                .then(snapshot => {
+                    const accounts = snapshot.val() || {};
+                    if (accounts[username] && accounts[username].password === password) {
+                        currentUser = { username: username, role: accounts[username].role, unit: accounts[username].unit };
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('main-container').style.display = 'flex';
+                        document.getElementById('can_bo_phan_cong').value = currentUser.username;
+                        if (currentUser.role === 'admin') {
+                            document.getElementById('account-btn').style.display = 'block';
+                        }
+                        updateTable();
+                    } else {
+                        alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+                    }
+                })
+                .catch(error => {
+                    alert('Lỗi khi đăng nhập: ' + error.message);
+                });
         }
         function logout() {
             currentUser = null;
@@ -755,16 +765,13 @@
                     database.ref('accounts').set(defaultAccounts)
                         .then(() => {
                             console.log("Tài khoản mặc định đã được tạo.");
-                            database.ref('accounts').on('value', snap => {
-                                accounts = snap.val() || {};
-                            });
                         })
                         .catch(error => console.error("Lỗi khi tạo tài khoản mặc định:", error));
-                } else {
-                    database.ref('accounts').on('value', snap => {
-                        accounts = snap.val() || {};
-                    });
                 }
+            });
+            // Thêm listener chung để cập nhật biến accounts bất cứ khi nào có thay đổi
+            database.ref('accounts').on('value', snap => {
+                accounts = snap.val() || {};
             });
         }
         // --- ACCOUNT MANAGEMENT FUNCTIONS (ĐÃ SỬA ĐỔI) ---
