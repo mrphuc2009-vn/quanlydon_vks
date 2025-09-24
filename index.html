@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     
     <style>
-        /* CSS VẪN GIỮ NGUYÊN */
+      
         body {
             font-family: 'Segoe UI', 'Times New Roman', sans-serif;
             margin: 0;
@@ -23,524 +23,495 @@
             flex-direction: column;
             align-items: center;
             color: #333;
-            background: linear-gradient(135deg, #e0e7ff, #f0f4f8);
-            overflow: auto;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
         }
-        .login-container {
-            max-width: 400px;
+
+        header {
             width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center;
-            margin: 10vh auto;
-            display: block;
-            background: url('https://vienkiemsat.cantho.gov.vn/files/images/logo-vks.png') no-repeat center 20px, linear-gradient(135deg, #e0e7ff, #f0f4f8);
-            background-size: auto 100px, cover;
-        }
-        .login-container h2 {
-            font-size: 24px;
-            color: #2c3e50;
-            margin: 100px 0 20px;
-        }
-        .login-container .footer-login {
-            font-size: 12px;
-            color: #7f8c8d;
-            margin-top: 20px;
-            text-align: center;
-        }
-        .login-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .login-container button {
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            background-color: #27ae60;
+            padding: 20px;
+            background-color: #004d40;
             color: white;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .login-container button:hover {
-            background-color: #219653;
-        }
-        /* START: CSS CHO NÚT QUÊN MẬT KHẨU */
-        .forgot-password {
-            margin-top: 10px;
             text-align: center;
-        }
-        .forgot-password a {
-            color: #007bff;
-            text-decoration: none;
-            font-size: 0.9em;
-            display: block; 
-        }
-        .forgot-password a:hover {
-            text-decoration: underline;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
         
-        .main-container {
-            width: 100%;
-            max-width: 1200px;
-            min-height: 90vh;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            z-index: 1;
-            display: none;
-            overflow: auto;
+        #login-container {
+            display: flex;
             flex-direction: column;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        .main-container.active {
-            display: flex;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-            padding: 10px 0;
-        }
-        .header h2 {
-            font-size: 24px;
-            color: #2c3e50;
-            margin: 0;
-            font-weight: 700;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        .header h3 {
-            font-size: 20px;
-            color: #3689f7;
-            margin: 5px 0 0;
-            font-weight: 500;
-        }
-        .top-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 5px 10px;
-            margin-bottom: 10px;
-        }
-        .top-buttons button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            color: white;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        .top-buttons button:hover {
-            transform: scale(1.05);
-        }
-        .top-buttons .reset-btn { background-color: #8e44ad; }
-        .top-buttons .reset-btn:hover { background-color: #7d3c98; }
-        .top-buttons .logout-btn { background-color: #e74c3c; }
-        .top-buttons .logout-btn:hover { background-color: #c0392b; }
-        .menu {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-        .menu button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            color: white;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            flex: 1 1 auto;
-            min-width: 120px;
-            max-width: 200px;
-        }
-        .menu button:hover {
-            transform: scale(1.03);
-        }
-        .menu .add-btn { background-color: #27ae60; }
-        .menu .add-btn:hover { background-color: #219653; }
-        .menu .export-btn { background-color: #2980b9; }
-        .menu .export-btn:hover { background-color: #2471a3; }
-        .menu .clear-btn { background-color: #e74c3c; }
-        .menu .clear-btn:hover { background-color: #c0392b; }
-        .menu .json-btn { background-color: #f39c12; }
-        .menu .json-btn:hover { background-color: #e67e22; }
-        .menu .account-btn { background-color: #8e44ad; } 
-        .menu .account-btn:hover { background-color: #7d3c98; }
-        .menu .word-btn { background-color: #1a73e8; } 
-        .menu .word-btn:hover { background-color: #155bb3; }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
-            margin-bottom: 10px;
-            padding: 0 10px;
-            flex-grow: 0;
-        }
-        .form-group {
-            margin: 0;
-            display: flex;
             align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            margin: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
-        .form-group label {
-            width: 150px;
-            font-weight: 600;
-            color: #34495e;
-            margin-right: 15px;
+
+        #login-container h2 {
+            margin-bottom: 20px;
+            color: #004d40;
         }
-        .form-group input, .form-group select, .form-group textarea {
+
+        #login-container input {
             width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #fff;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             box-sizing: border-box;
         }
+
+        #login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #004d40;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        #login-container button:hover {
+            background-color: #00332b;
+        }
+
+        #main-container {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            margin-top: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: calc(100% - 60px);
+            gap: 20px;
+            padding: 0 20px;
+        }
+        
+        .sidebar {
+            flex: 1;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .main-panel {
+            flex: 2;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            overflow-y: auto;
+        }
+        
+        .sidebar button, .main-panel button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            background-color: #00796b;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar button:hover, .main-panel button:hover {
+            background-color: #00605a;
+        }
+        
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-section.full-width {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
         .form-group textarea {
-            height: 60px;
             resize: vertical;
+            min-height: 80px;
         }
         
         .can-cu-item {
-            display: flex;
-            gap: 5px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 2fr auto;
+            gap: 10px;
             margin-bottom: 5px;
-            align-items: center;
         }
-        .can-cu-item input {
-            flex: 1;
-            min-width: 50px;
-        }
-        .can-cu-item button {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 6px;
-            min-width: 50px;
-            font-size: 12px;
-        }
-        .can-cu-controls {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 10px;
-        }
-        .table-container {
-            margin-top: 20px;
-            flex-grow: 1;
-            min-height: 200px;
-            overflow-y: auto;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 0 10px;
-        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
-            table-layout: fixed;
+            margin-top: 20px;
         }
+        
         th, td {
             border: 1px solid #ddd;
-            padding: 10px;
+            padding: 12px;
             text-align: left;
-            word-wrap: break-word;
-            overflow: hidden;
-            max-width: 0;
         }
-        th {
-            background-color: #2c3e50;
-            color: white;
-            position: sticky;
-            top: 0;
-        }
-        tr:nth-child(even) { background-color: #f8f8f8; }
-        tr:hover td { background-color: #ecf0f1; }
-        .edit-btn, .delete-btn, .xu-ly-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-right: 5px;
-        }
-        .edit-btn { background-color: #f1c40f; color: #333; }
-        .delete-btn { background-color: #e74c3c; color: white; }
-        .xu-ly-btn { background-color: #2980b9; color: white; }
         
-        /* Modal General Styles */
+        th {
+            background-color: #e0f2f1;
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        
+        tr:hover {
+            background-color: #e8f5e9;
+        }
+        
+        .table-actions button {
+            padding: 5px 10px;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+
         .modal {
             display: none;
             position: fixed;
-            top: 0;
+            z-index: 1000;
             left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
         }
-        .modal-content {
-            background: rgba(255, 255, 255, 0.98);
-            padding: 20px;
-            border-radius: 12px;
-            width: 400px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            z-index: 1001;
-        }
-        .modal-content.large-modal {
-            width: 90%;
-            max-width: 900px;
-        }
-        .modal-content button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            color: white;
-        }
-        .modal-content button.save-btn { background-color: #27ae60; }
-        .modal-content button.cancel-btn { background-color: #e74c3c; }
 
-        .footer {
-            margin-top: 10px;
-            font-size: 12px;
-            color: #7f8c8d;
-            text-align: center;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 8px;
-            width: 100%;
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
         }
         
-        .account-list {
-            list-style: none;
-            padding: 0;
+        .modal-content.large-modal {
+            max-width: 900px;
         }
-        .account-list li {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
+
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+        
+        .close-btn:hover, .close-btn:focus {
+            color: #000;
+        }
+        
+        .btn-container {
+            margin-top: 20px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .delete-btn {
+            background-color: #d32f2f !important;
+        }
+        
+        .delete-btn:hover {
+            background-color: #b71c1c !important;
+        }
+        
+        .edit-btn {
+            background-color: #1976d2 !important;
+        }
+        
+        .edit-btn:hover {
+            background-color: #1565c0 !important;
+        }
+        
+        #proposal-content {
+            white-space: pre-wrap;
+            font-family: 'Times New Roman', serif;
+            font-size: 14pt;
+            line-height: 1.5;
+        }
+        
+        #top-right-buttons {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="login-container active" id="login-container">
-        <h2>Quản Lý Đơn khiếu nại - tố cáo</h2>
-        <h3>ĐĂNG NHẬP</h3>
-        <input type="text" id="username" placeholder="Tên đăng nhập" onkeypress="if(event.key === 'Enter') login()">
-        <input type="password" id="password" placeholder="Mật khẩu" value="123456" onkeypress="if(event.key === 'Enter') login()">
-        <button onclick="login()">Đăng Nhập</button>
-        <div class="forgot-password">
-            <a href="#" onclick="handleForgotPassword(); return false;">Quên mật khẩu?</a>
+    <header>
+        <h1>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h1>
+        <div id="top-right-buttons">
+            <button id="account-btn" onclick="showAccountsModal()" style="display:none;">Quản lý tài khoản</button>
+            <button onclick="logout()">Đăng xuất</button>
         </div>
-        <div class="footer-login">
-            <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
-            <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
+    </header>
+
+    <div id="login-container">
+        <h2>Đăng Nhập</h2>
+        <input type="text" id="username" placeholder="Tên đăng nhập">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button onclick="login()">Đăng Nhập</button>
+        <p><a href="#" onclick="handleForgotPassword()">Quên mật khẩu?</a></p>
+    </div>
+
+    <div id="main-container">
+        <div class="main-content">
+            <div class="sidebar">
+                <h2>Lưu đơn mới</h2>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="ngay_nhan">Ngày nhận đơn:</label>
+                        <input type="date" id="ngay_nhan">
+                    </div>
+                    <div class="form-group">
+                        <label for="nguon_don">Nguồn đơn:</label>
+                        <select id="nguon_don"></select>
+                    </div>
+                </div>
+                <div class="form-section full-width">
+                    <div class="form-group">
+                        <label for="ho_ten">Họ tên/Cơ quan/Tổ chức:</label>
+                        <input type="text" id="ho_ten">
+                    </div>
+                    <div class="form-group">
+                        <label for="dia_chi">Địa chỉ:</label>
+                        <input type="text" id="dia_chi">
+                    </div>
+                </div>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="ngay_ghi">Đơn ghi ngày:</label>
+                        <input type="date" id="ngay_ghi">
+                    </div>
+                    <div class="form-group">
+                        <label for="phan_loai">Phân loại:</label>
+                        <select id="phan_loai" onchange="capNhatThamQuyenMacDinh()">
+                            <option value="Khiếu nại">Khiếu nại</option>
+                            <option value="Tố cáo">Tố cáo</option>
+                            <option value="Tin báo/Tố giác tội phạm trong HĐTP">Tin báo/Tố giác tội phạm trong HĐTP</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="tham_quyen">Thẩm quyền:</label>
+                        <select id="tham_quyen">
+                            <option value="Chọn">--Chọn--</option>
+                            <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
+                            <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
+                            <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="can_bo_phan_cong">Cán bộ phân công:</label>
+                        <input type="text" id="can_bo_phan_cong" readonly>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <div class="form-group">
+                        <label for="chuc_danh">Chức danh:</label>
+                        <select id="chuc_danh">
+                            <option value="Chọn">--Chọn--</option>
+                            <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
+                            <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
+                            <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
+                            <option value="Kiểm tra viên">Kiểm tra viên</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="chuyen_den">Chuyển đến:</label>
+                        <select id="chuyen_den"></select>
+                    </div>
+                </div>
+                <div class="form-section">
+                     <div class="form-group">
+                        <label for="ngay_chuyen_don">Ngày chuyển đơn:</label>
+                        <input type="date" id="ngay_chuyen_don">
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Căn cứ:</label>
+                    <div id="can_cu_container"></div>
+                    <button onclick="addCanCu()">Thêm căn cứ</button>
+                </div>
+                <div class="form-group full-width">
+                    <label for="noi_dung">Nội dung đơn:</label>
+                    <textarea id="noi_dung"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="de_xuat">Đề xuất:</label>
+                    <textarea id="de_xuat"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="ket_qua">Kết quả:</label>
+                    <textarea id="ket_qua"></textarea>
+                </div>
+                <input type="hidden" id="edit-id">
+                <button onclick="saveDon()">Lưu đơn</button>
+            </div>
+
+            <div class="main-panel">
+                <h2>Danh sách đơn</h2>
+                <div class="btn-container" style="justify-content: flex-start;">
+                    <button onclick="exportList()">Xuất Excel</button>
+                    <button onclick="exportReport()">Xuất báo cáo</button>
+                    <button onclick="extractProposalSlip()">Trích xuất phiếu đề xuất</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Ngày nhận đơn</th>
+                            <th>Họ tên/CQ/TC</th>
+                            <th>Nội dung đơn</th>
+                            <th>Phân loại</th>
+                            <th>Thẩm quyền</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="don-body">
+                        </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="main-container" id="main-container">
-        <div class="top-buttons">
-            <button class="reset-btn" onclick="showChangePassModal()">Đổi Mật Khẩu</button>
-            <button class="logout-btn" onclick="logout()">Đăng Xuất</button>
-        </div>
-        <div class="header">
-            <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
-        </div>
-
-        <div class="menu">
-            <button class="add-btn" onclick="clearForm()">Thêm Đơn Mới</button>
-            <button class="export-btn" onclick="exportList()">Xuất Danh sách (.csv)</button>
-            <button class="export-btn" onclick="exportReport()">Xuất Báo Cáo (.csv)</button>
-            <button class="word-btn" onclick="extractProposalSlip()">Trích Xuất Phiếu ĐX</button>
-            <button class="json-btn" onclick="downloadJSON()">Tải JSON (Backup)</button>
-            <button class="account-btn" id="account-btn" onclick="showAccountsModal()" style="display: none;">Quản Lý Tài Khoản</button>
-        </div>
-
-        <div class="form-grid">
-            <div class="form-group">
-                <label for="ngay_nhan">1. Ngày nhận đơn:</label>
-                <input type="date" id="ngay_nhan">
+    <div id="accountsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('accountsModal').style.display='none'">&times;</span>
+            <h3>Quản lý Tài khoản</h3>
+            <h4>Tạo tài khoản mới</h4>
+            <div class="form-section">
+                <div class="form-group">
+                    <label for="new-username">Tên đăng nhập:</label>
+                    <input type="text" id="new-username">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Mật khẩu:</label>
+                    <input type="password" id="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="new-role">Vai trò:</label>
+                    <select id="new-role">
+                        <option value="admin">Quản trị viên (admin)</option>
+                        <option value="manager_TP">Quản lý cấp Thành phố</option>
+                        <option value="user_TP">Người dùng cấp Thành phố</option>
+                        <option value="manager_KV">Quản lý cấp Khu vực</option>
+                        <option value="user_KV">Người dùng cấp Khu vực</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="new-unit">Đơn vị:</label>
+                    <select id="new-unit"></select>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="nguon_don">2. Nguồn đơn:</label>
-                <select id="nguon_don">
-                    <option value="">--Chọn--</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="ho_ten">3. Họ tên/ CQ/ TC:</label>
-                <input type="text" id="ho_ten">
-            </div>
-            <div class="form-group">
-                <label for="dia_chi">4. Địa chỉ:</label>
-                <input type="text" id="dia_chi">
-            </div>
-            <div class="form-group">
-                <label for="ngay_ghi">5. Đơn ghi ngày:</label>
-                <input type="date" id="ngay_ghi">
-            </div>
-            <div class="form-group">
-                <label for="phan_loai">6. Phân loại:</label>
-                <select id="phan_loai" onchange="capNhatThamQuyenMacDinh()">
-                    <option value="">--Chọn--</option>
-                    <option value="Khiếu nại">Khiếu nại</option>
-                    <option value="Tố cáo">Tố cáo</option>
-                    <option value="Kiến nghị/Phản ánh/Khác">Kiến nghị/Phản ánh/Khác</option>
-                    <option value="Yêu cầu bồi thường thiệt hại">Yêu cầu bồi thường thiệt hại</option>
-                    <option value="Đề nghị KN, GĐT, TT">Đề nghị KN, GĐT, TT</option>
-                    <option value="Đề nghị kiểm tra QĐGQKN">Đề nghị kiểm tra QĐGQKN</option>
-                    <option value="Tin báo/Tố giác tội phạm trong HĐTP">Tin báo/Tố giác tội phạm trong HĐTP</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="tham_quyen">7. Thẩm quyền:</label>
-                <select id="tham_quyen">
-                     <option value="Chọn">--Chọn--</option>
-                    <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
-                    <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
-                    <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="can_bo_phan_cong">8. Cán bộ phân công:</label>
-                <input type="text" id="can_bo_phan_cong" value="">
-            </div>
-            <div class="form-group">
-                <label for="chuc_danh">9. Chức danh:</label>
-                <select id="chuc_danh">
-                     <option value="Chọn">--Chọn--</option>
-                    <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
-                    <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
-                    <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
-                    <option value="Kiểm tra viên">Kiểm tra viên</option>
-                    <option value="Chuyên viên">Chuyên viên</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="chuyen_den">10. Chuyển đến:</label>
-                <select id="chuyen_den">
-                    <option value="">--Chọn--</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="ngay_chuyen_don">11. Ngày chuyển đơn:</label>
-                <input type="date" id="ngay_chuyen_don">
-            </div>
-            <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
-                <div id="can_cu_container" style="width: 100%;">
-                    </div>
-                <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu()">Thêm Căn cứ</button>
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="noi_dung" style="display: block; width: auto; margin-bottom: 5px;">13. Nội dung đơn (Tóm tắt):</label>
-                <textarea id="noi_dung"></textarea>
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="de_xuat" style="display: block; width: auto; margin-bottom: 5px;">14. Đề xuất:</label>
-                <textarea id="de_xuat"></textarea>
-            </div>
-            <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý đơn:</label>
-                <textarea id="ket_qua"></textarea>
-            </div>
-        </div>
-
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="add-btn" onclick="saveDon()">Lưu Đơn</button>
-            <input type="hidden" id="edit-id"> </div>
-
-        <div class="table-container">
-            <h3>Danh Sách Đơn Đã Nhập (Dữ liệu chung)</h3>
-            <table id="don-table">
-                <thead>
-                    <tr>
-                        <th style="width: 5%;">STT</th>
-                        <th style="width: 10%;">Ngày nhận</th>
-                        <th style="width: 20%;">Họ tên/ CQ/ TC</th>
-                        <th style="width: 30%;">Nội dung (Tóm tắt)</th>
-                        <th style="width: 10%;">Phân loại</th>
-                        <th style="width: 10%;">Thẩm quyền</th>
-                        <th style="width: 15%;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody id="don-body">
-                    </tbody>
-            </table>
-        </div>
-
-        <div class="footer">
-            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ | Phiên bản FIREBASE (Chia sẻ dữ liệu)
+            <button onclick="createAccount()">Tạo tài khoản</button>
+            <h4>Danh sách tài khoản</h4>
+            <ul id="account-list"></ul>
         </div>
     </div>
 
     <div id="editModal" class="modal">
         <div class="modal-content large-modal">
-            <h2>Sửa Thông Tin Đơn</h2>
-            <div class="form-grid">
+            <span class="close-btn" onclick="document.getElementById('editModal').style.display='none'">&times;</span>
+            <h3>Sửa đổi đơn</h3>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="sua-ngay_nhan">1. Ngày nhận đơn:</label>
+                    <label for="sua-ngay_nhan">Ngày nhận đơn:</label>
                     <input type="date" id="sua-ngay_nhan">
                 </div>
                 <div class="form-group">
-                    <label for="sua-nguon_don">2. Nguồn đơn:</label>
+                    <label for="sua-nguon_don">Nguồn đơn:</label>
                     <select id="sua-nguon_don"></select>
                 </div>
+            </div>
+            <div class="form-section full-width">
                 <div class="form-group">
-                    <label for="sua-ho_ten">3. Họ tên/ CQ/ TC:</label>
+                    <label for="sua-ho_ten">Họ tên/Cơ quan/Tổ chức:</label>
                     <input type="text" id="sua-ho_ten">
                 </div>
                 <div class="form-group">
-                    <label for="sua-dia_chi">4. Địa chỉ:</label>
+                    <label for="sua-dia_chi">Địa chỉ:</label>
                     <input type="text" id="sua-dia_chi">
                 </div>
+            </div>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="sua-ngay_ghi">5. Đơn ghi ngày:</label>
+                    <label for="sua-ngay_ghi">Đơn ghi ngày:</label>
                     <input type="date" id="sua-ngay_ghi">
                 </div>
                 <div class="form-group">
-                    <label for="sua-phan_loai">6. Phân loại:</label>
+                    <label for="sua-phan_loai">Phân loại:</label>
                     <select id="sua-phan_loai" onchange="capNhatThamQuyenMacDinh('sua-')">
                         <option value="Khiếu nại">Khiếu nại</option>
                         <option value="Tố cáo">Tố cáo</option>
-                        <option value="Kiến nghị/Phản ánh/Khác">Kiến nghị/Phản ánh/Khác</option>
-                        <option value="Yêu cầu bồi thường thiệt hại">Yêu cầu bồi thường thiệt hại</option>
-                        <option value="Đề nghị KN, GĐT, TT">Đề nghị KN, GĐT, TT</option>
-                        <option value="Đề nghị kiểm tra QĐGQKN">Đề nghị kiểm tra QĐGQKN</option>
                         <option value="Tin báo/Tố giác tội phạm trong HĐTP">Tin báo/Tố giác tội phạm trong HĐTP</option>
                     </select>
                 </div>
+            </div>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="sua-tham_quyen">7. Thẩm quyền:</label>
+                    <label for="sua-tham_quyen">Thẩm quyền:</label>
                     <select id="sua-tham_quyen">
                         <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
                         <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
@@ -548,110 +519,98 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="sua-can_bo_phan_cong">8. Cán bộ phân công:</label>
+                    <label for="sua-can_bo_phan_cong">Cán bộ phân công:</label>
                     <input type="text" id="sua-can_bo_phan_cong">
                 </div>
+            </div>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="sua-chuc_danh">9. Chức danh:</label>
+                    <label for="sua-chuc_danh">Chức danh:</label>
                     <select id="sua-chuc_danh">
+                        <option value="Kiểm sát viên cao cấp">Kiểm sát viên cao cấp</option>
                         <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
                         <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
                         <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
                         <option value="Kiểm tra viên">Kiểm tra viên</option>
-                        <option value="Chuyên viên">Chuyên viên</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="sua-chuyen_den">10. chuyển đến:</label>
+                    <label for="sua-chuyen_den">Chuyển đến:</label>
                     <select id="sua-chuyen_den"></select>
                 </div>
+            </div>
+            <div class="form-section">
                 <div class="form-group">
-                    <label for="sua-ngay_chuyen_don">11. Ngày chuyển đơn:</label>
+                    <label for="sua-ngay_chuyen_don">Ngày chuyển đơn:</label>
                     <input type="date" id="sua-ngay_chuyen_don">
                 </div>
-                <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                    <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
-                    <div id="sua-can_cu_container" style="width: 100%;">
-                    </div>
-                    <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu('sua-')">Thêm Căn cứ</button>
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-noi_dung" style="display: block; width: auto; margin-bottom: 5px;">13. Nội dung đơn (Tóm tắt):</label>
-                    <textarea id="sua-noi_dung"></textarea>
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-de_xuat" style="display: block; width: auto; margin-bottom: 5px;">14. Đề xuất:</label>
-                    <textarea id="sua-de_xuat"></textarea>
-                </div>
-                <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý đơn:</label>
-                    <textarea id="sua-ket_qua"></textarea>
-                </div>
             </div>
-
-            <button class="save-btn" onclick="updateDon()">Cập Nhật</button>
-            <button class="cancel-btn" onclick="document.getElementById('editModal').style.display = 'none';">Hủy</button>
-        </div>
-    </div>
-    <div id="accountsModal" class="modal">
-        <div class="modal-content">
-            <h2>Quản Lý Tài Khoản</h2>
-            <ul id="account-list" class="account-list"></ul>
-            <div style="border-top: 1px solid #ddd; padding-top: 15px; margin-top: 15px;">
-                <h3>Tạo Tài Khoản Mới</h3>
-                <input type="text" id="new-username" placeholder="Tên đăng nhập mới">
-                <input type="password" id="new-password" placeholder="Mật khẩu">
-                <div class="form-group" style="display: flex; flex-direction: column; align-items: flex-start;">
-                    <label for="new-role">Vai trò:</label>
-                    <select id="new-role" style="width: 100%;" onchange="capNhatDonViTheoVaiTro()">
-                        <option value="user_TP">Người dùng cấp Thành phố</option>
-                        <option value="manager_TP">Quản lý cấp Thành phố</option>
-                        <option value="user_KV">Người dùng cấp Khu vực</option>
-                        <option value="manager_KV">Quản lý cấp Khu vực</option>
-                        <option value="admin">Quản trị viên</option>
-                    </select>
-                </div>
-                <div class="form-group" id="unit-field" style="display: flex; flex-direction: column; align-items: flex-start; margin-top: 10px;">
-                    <label for="new-unit">Đơn vị:</label>
-                    <select id="new-unit" style="width: 100%;">
-                    </select>
-                </div>
-                <button class="save-btn" style="width: 100%;" onclick="createAccount()">Tạo Tài Khoản</button>
+             <div class="form-group full-width">
+                <label>Căn cứ:</label>
+                <div id="sua-can_cu_container"></div>
+                <button onclick="addCanCu('sua-')">Thêm căn cứ</button>
             </div>
-            <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('accountsModal').style.display = 'none';">Đóng</button>
+            <div class="form-group full-width">
+                <label for="sua-noi_dung">Nội dung đơn:</label>
+                <textarea id="sua-noi_dung"></textarea>
+            </div>
+            <div class="form-group full-width">
+                <label for="sua-de_xuat">Đề xuất:</label>
+                <textarea id="sua-de_xuat"></textarea>
+            </div>
+            <div class="form-group full-width">
+                <label for="sua-ket_qua">Kết quả:</label>
+                <textarea id="sua-ket_qua"></textarea>
+            </div>
+            <div class="btn-container">
+                <button onclick="updateDon()">Cập nhật</button>
+            </div>
         </div>
     </div>
-    <div id="changePassModal" class="modal">
-        <div class="modal-content">
-            <h2>Đổi Mật Khẩu</h2>
-            <input type="password" id="old-password" placeholder="Mật khẩu cũ">
-            <input type="password" id="new-password-change" placeholder="Mật khẩu mới">
-            <input type="password" id="confirm-password-change" placeholder="Nhập lại mật khẩu mới">
-            <button class="save-btn" style="width: 100%;" onclick="changePassword()">Đổi Mật Khẩu</button>
-            <button class="cancel-btn" style="width: 100%; margin-top: 10px;" onclick="document.getElementById('changePassModal').style.display = 'none';">Hủy</button>
-        </div>
-    </div>
+    
     <div id="proposalModal" class="modal">
         <div class="modal-content large-modal">
-            <h2>Xem trước Phiếu Đề Xuất</h2>
-            <div id="proposal-content" style="white-space: pre-wrap; text-align: left; font-family: 'Times New Roman', serif; font-size: 14px; border: 1px dashed #ccc; padding: 15px;">
+            <span class="close-btn" onclick="document.getElementById('proposalModal').style.display='none'">&times;</span>
+            <pre id="proposal-content"></pre>
+            <div class="btn-container">
+                <button onclick="downloadProposalDoc()">Tải xuống file text</button>
             </div>
-            <p style="color: #e74c3c; font-size: 12px; margin-top: 10px;">Lưu ý: Chức năng này chỉ trích xuất file .txt.</p>
-            <button class="save-btn" onclick="downloadProposalDoc()">Tải xuống (.txt)</button>
-            <button class="cancel-btn" onclick="document.getElementById('proposalModal').style.display = 'none';">Đóng</button>
         </div>
     </div>
+
+    <div id="changePassModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="document.getElementById('changePassModal').style.display='none'">&times;</span>
+            <h3>Đổi mật khẩu</h3>
+            <div class="form-group">
+                <label for="old-password">Mật khẩu cũ:</label>
+                <input type="password" id="old-password">
+            </div>
+            <div class="form-group">
+                <label for="new-password-change">Mật khẩu mới:</label>
+                <input type="password" id="new-password-change">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password-change">Xác nhận mật khẩu mới:</label>
+                <input type="password" id="confirm-password-change">
+            </div>
+            <div class="btn-container">
+                <button onclick="changePassword()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
         // THAY THẾ CHỖ NÀY BẰNG CẤU HÌNH CỦA BẠN (Bước 1)
         const firebaseConfig = {
-            apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
-            authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
-            databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "quanlydonvks-d7ff9",
-            storageBucket: "quanlydonvks-d7ff9.firebasestorage.app",
-            messagingSenderId: "209768483000",
-            appId: "1:209768483000:web:1eb449ad41840e23334c4d"
+            apiKey: "BẠN_DÁN_APIKEY_CỦA_BẠN_VÀO_ĐÂY",
+            authDomain: "BẠN_DÁN_AUTHDOMAIN_CỦA_BẠN_VÀO_ĐÂY",
+            databaseURL: "BẠN_DÁN_DATABASEURL_CỦA_BẠN_VÀO_ĐÂY",
+            projectId: "BẠN_DÁN_PROJECTID_CỦA_BẠN_VÀO_ĐÂY",
+            storageBucket: "BẠN_DÁN_STORAGEBUCKET_CỦA_BẠN_VÀO_ĐÂY",
+            messagingSenderId: "BẠN_DÁN_MESSAGINGSENDERID_CỦA_BẠN_VÀO_ĐÂY",
+            appId: "BẠN_DÁN_APPID_CỦA_BẠN_VÀO_ĐÂY"
         };
         // Khởi tạo Firebase
         firebase.initializeApp(firebaseConfig);
@@ -684,23 +643,32 @@
                 'VKSND Quận Thốt Nốt', 'VKSND Huyện Vĩnh Thạnh', 'VKSND Huyện Cờ Đỏ', 'VKSND Huyện Phong Điền', 'VKSND Huyện Thới Lai'
             ]
         };
-
-        // --- AUTHENTICATION FUNCTIONS ---
+        
+        // --- AUTHENTICATION FUNCTIONS (ĐÃ SỬA LỖI ĐĂNG NHẬP) ---
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            if (accounts[username] && accounts[username].password === password) {
-                currentUser = { username: username, role: accounts[username].role, unit: accounts[username].unit };
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'flex';
-                document.getElementById('can_bo_phan_cong').value = currentUser.username;
-                if (currentUser.role === 'admin') {
-                    document.getElementById('account-btn').style.display = 'block';
-                }
-                updateTable();
-            } else {
-                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
-            }
+
+            // Sử dụng .once() để đảm bảo dữ liệu được lấy về trước khi xử lý
+            database.ref('accounts').once('value')
+                .then(snapshot => {
+                    const accounts = snapshot.val() || {};
+                    if (accounts[username] && accounts[username].password === password) {
+                        currentUser = { username: username, role: accounts[username].role, unit: accounts[username].unit };
+                        document.getElementById('login-container').style.display = 'none';
+                        document.getElementById('main-container').style.display = 'flex';
+                        document.getElementById('can_bo_phan_cong').value = currentUser.username;
+                        if (currentUser.role === 'admin') {
+                            document.getElementById('account-btn').style.display = 'block';
+                        }
+                        updateTable();
+                    } else {
+                        alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+                    }
+                })
+                .catch(error => {
+                    alert('Lỗi khi đăng nhập: ' + error.message);
+                });
         }
         function logout() {
             currentUser = null;
@@ -756,16 +724,13 @@
                     database.ref('accounts').set(defaultAccounts)
                         .then(() => {
                             console.log("Tài khoản mặc định đã được tạo.");
-                            database.ref('accounts').on('value', snap => {
-                                accounts = snap.val() || {};
-                            });
                         })
                         .catch(error => console.error("Lỗi khi tạo tài khoản mặc định:", error));
-                } else {
-                    database.ref('accounts').on('value', snap => {
-                        accounts = snap.val() || {};
-                    });
                 }
+            });
+            // Thêm listener chung để cập nhật biến accounts bất cứ khi nào có thay đổi
+            database.ref('accounts').on('value', snap => {
+                accounts = snap.val() || {};
             });
         }
         // --- ACCOUNT MANAGEMENT FUNCTIONS (ĐÃ SỬA ĐỔI) ---
@@ -866,9 +831,9 @@
             document.getElementById('dia_chi').value = '';
             document.getElementById('ngay_ghi').value = '';
             document.getElementById('phan_loai').value = '';
-            document.getElementById('tham_quyen').value = '--Chọn--';
+            document.getElementById('tham_quyen').value = 'Thuộc thẩm quyền giải quyết';
             document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : '';
-            document.getElementById('chuc_danh').value = '--Chọn--';
+            document.getElementById('chuc_danh').value = 'Kiểm sát viên trung cấp';
             document.getElementById('chuyen_den').value = '';
             document.getElementById('ngay_chuyen_don').value = '';
             document.getElementById('noi_dung').value = '';
@@ -990,6 +955,12 @@
             const suaNguonDonSelect = document.getElementById('sua-nguon_don');
             const suaNoiChuyenDonSelect = document.getElementById('sua-noi_chuyen_don');
 
+            nguonDonSelect.innerHTML = '<option value="">--Chọn--</option>';
+            suaNguonDonSelect.innerHTML = '';
+            chuyenDenSelect.innerHTML = '<option value="">--Chọn--</option>';
+            suaNoiChuyenDonSelect.innerHTML = '';
+
+
             lookupData['Nguồn đơn'].forEach(nguon => {
                 const option1 = document.createElement('option');
                 option1.value = nguon;
@@ -1006,7 +977,7 @@
                 const option1 = document.createElement('option');
                 option1.value = noi;
                 option1.textContent = noi;
-                noiChuyenDonSelect.appendChild(option1);
+                chuyenDenSelect.appendChild(option1);
 
                 const option2 = document.createElement('option');
                 option2.value = noi;
