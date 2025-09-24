@@ -373,7 +373,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+            <h3>QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -431,11 +431,12 @@
             </div>
             <div class="form-group">
                 <label for="can_bo_phan_cong">8. Cán bộ phân công:</label>
-                <input type="text" id="can_bo_phan_cong" value="Nguyễn Văn A">
+                <input type="text" id="can_bo_phan_cong" value="">
             </div>
             <div class="form-group">
                 <label for="chuc_danh">9. Chức danh:</label>
                 <select id="chuc_danh">
+                    <option value="Chọn">--Chọn--</option>
                     <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
                     <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
                     <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
@@ -468,7 +469,7 @@
                 <textarea id="de_xuat"></textarea>
             </div>
             <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý đơn:</label>
                 <textarea id="ket_qua"></textarea>
             </div>
         </div>
@@ -497,7 +498,7 @@
         </div>
 
         <div class="footer">
-               <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
+             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
             <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
         </div>
     </div>
@@ -553,6 +554,7 @@
                 <div class="form-group">
                     <label for="sua-chuc_danh">9. Chức danh:</label>
                     <select id="sua-chuc_danh">
+                        <option value="--Chọn--">--Chọn--</option>
                         <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
                         <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
                         <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
@@ -561,7 +563,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="sua-noi_chuyen_don">10. Nơi chuyển đơn (Nếu KTQ):</label>
+                    <label for="sua-noi_chuyen_don">10. Chuyển đến:</label>
                     <select id="sua-noi_chuyen_don"></select>
                 </div>
                 <div class="form-group">
@@ -583,7 +585,7 @@
                     <textarea id="sua-de_xuat"></textarea>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý đơn:</label>
                     <textarea id="sua-ket_qua"></textarea>
                 </div>
             </div>
@@ -604,9 +606,9 @@
                     <label for="new-role">Vai trò:</label>
                     <select id="new-role" style="width: 100%;" onchange="capNhatDonViTheoVaiTro()">
                         <option value="user_TP">Người dùng cấp Thành phố</option>
-                        <option value="manager_TP">Quản lý cấp Thành phố</option>
+                        
                         <option value="user_KV">Người dùng cấp Khu vực</option>
-                        <option value="manager_KV">Quản lý cấp Khu vực</option>
+                        
                         <option value="admin">Quản trị viên</option>
                     </select>
                 </div>
@@ -644,7 +646,7 @@
         // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
         // THAY THẾ CHỖ NÀY BẰNG CẤU HÌNH CỦA BẠN (Bước 1)
         const firebaseConfig = {
-            apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
+            apiKey: "AIzaSyBvhrB9m_SgL_pWfE7iV-b_R_tA9-fI-Y",
             authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
             databaseURL: "https://quanlydonvks-d7ff9-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "quanlydonvks-d7ff9",
@@ -671,16 +673,16 @@
                 'Tòa án nhân dân thành phố', 'Cơ quan CSĐT', 'Thanh tra thành phố', 'Thanh tra quận, huyện',
                 'Chi cục thi hành án', 'Sở Tư pháp', 'Sở Tài nguyên và Môi trường', 'Báo, đài', 'Hộp thư điện tử'
             ],
-            'Nơi chuyển đơn': [
+            'Chuyển đến': [
                 'TAND thành phố Cần Thơ', 'UBND thành phố Cần Thơ', 'Cơ quan CSĐT Công an thành phố',
-                'Cục Thi hành án dân sự thành phố', 'Cục Điều tra VKSTC', 'TANDTC', 'Viện kiểm sát Quân sự Quân khu 9',
-                'VKSND Quận Ninh Kiều', 'VKSND Quận Bình Thủy', 'VKSND Quận Ô Môn', 'VKSND Quận Cái Răng',
-                'VKSND Quận Thốt Nốt', 'VKSND Huyện Vĩnh Thạnh', 'VKSND Huyện Cờ Đỏ', 'VKSND Huyện Phong Điền', 'VKSND Huyện Thới Lai',
-                'THADS KV1', 'THADS KV2', 'THADS KV3', 'THADS KV4', 'THADS KV5'
+                'Cục Điều tra VKSTC', 'TANDTC', 'Viện kiểm sát Quân sự Quân khu 9',
+                'VKSND KV1', 'VKSND KV2', 'VKSND KV3', 'VKSND KV4', 'VKSND KV5', 'VKSND KV6', 'VKSND KV7', 'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14',
+                'Phòng 1', 'Phòng 2', 'Phòng 7', 'Phòng 9', 'Phòng 10', 'Phòng 11', 'Phòng 15',
+                'THADS KV1', 'THADS KV2', 'THADS KV3', 'THADS KV4', 'THADS KV5', 'THADS KV6', 'THADS KV7', 'THADS KV8', 'THADS KV9', 'THADS KV10', 'THADS KV11', 'THADS KV12', 'THADS KV13', 'THADS KV14'
             ],
             'Đơn vị': [
-                'VKSND Quận Ninh Kiều', 'VKSND Quận Bình Thủy', 'VKSND Quận Ô Môn', 'VKSND Quận Cái Răng',
-                'VKSND Quận Thốt Nốt', 'VKSND Huyện Vĩnh Thạnh', 'VKSND Huyện Cờ Đỏ', 'VKSND Huyện Phong Điền', 'VKSND Huyện Thới Lai'
+                'VKSND KV1', 'VKSND KV2', 'VKSND KV3', 'VKSND KV4', 'VKSND KV5', 'VKSND KV6', 'VKSND KV7', 
+                'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14'
             ]
         };
 
@@ -988,6 +990,12 @@
             const noiChuyenDonSelect = document.getElementById('noi_chuyen_don');
             const suaNguonDonSelect = document.getElementById('sua-nguon_don');
             const suaNoiChuyenDonSelect = document.getElementById('sua-noi_chuyen_don');
+
+            nguonDonSelect.innerHTML = '<option value="">--Chọn--</option>';
+            suaNguonDonSelect.innerHTML = '';
+            noiChuyenDonSelect.innerHTML = '<option value="">--Chọn--</option>';
+            suaNoiChuyenDonSelect.innerHTML = '';
+
 
             lookupData['Nguồn đơn'].forEach(nguon => {
                 const option1 = document.createElement('option');
