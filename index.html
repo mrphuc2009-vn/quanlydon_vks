@@ -990,7 +990,7 @@
             const resetUsername = 'super_admin'; 
             const newPassword = '123456'; 
             
-            if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản '${resetUsername}' về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
+            if (confirm(`Bạn có chắc chắn muốn đặt lại mật khẩu tài khoản về mặc định '${newPassword}' không? Hành động này sẽ ghi đè mật khẩu hiện tại.`)) {
                 
                 firebase.database().ref('accounts').child(resetUsername).once('value')
                     .then(snapshot => {
