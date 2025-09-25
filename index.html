@@ -413,7 +413,7 @@
         <input type="password" id="password" placeholder="Mật khẩu" value="admin1234" onkeypress="if(event.key === 'Enter') login()">
         <button onclick="login()">Đăng Nhập</button>
         <div class="forgot-password">
-            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu admin (super_admin) về 123456</a>
+            <a href="#" onclick="handleForgotPassword(); return false;">Đặt lại mật khẩu?</a>
         </div>
         <div class="footer-login">
             <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
@@ -428,7 +428,7 @@
         </div>
         <div class="header">
             <h2>VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ</h2>
-            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO (SHARED DATABASE)</h3>
+            <h3>PHẦN MỀM QUẢN LÝ ĐƠN KHIẾU NẠI - TỐ CÁO</h3>
         </div>
 
         <div class="menu">
@@ -560,7 +560,8 @@
         </div>
 
         <div class="footer">
-            Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ | Phiên bản FIREBASE (Chia sẻ dữ liệu - 02 Cấp)
+            <p>Bản quyền thuộc Viện kiểm sát nhân dân thành phố Cần Thơ</p>
+            <p>Địa chỉ: Số 19 Nguyễn Văn Cừ, phường An Bình, thành phố Cần Thơ</p>
         </div>
     </div>
 
@@ -727,15 +728,14 @@
                 'Cục ĐT, VKSTC', 'V12, VKSTC', 'Cơ quan NN', 'Thành ủy'
             ].sort(),
             'Nơi chuyển đơn': [
-                'THADS TP.CT', 'TAND TP.CT', 'TAND KV 1 (Ninh Kiều)', 'TAND KV 2 (Cái Răng)',
-                'TAND KV 3 (Bình Thủy)', 'TAND KV 4 (Ô Môn)', 'TAND KV 5 (Thốt Nốt)', 
-                'TAND KV 6 (Cờ Đỏ)', 'TAND KV 7 (Phong Điền)', 'TAND KV 8 (Vĩnh Thạnh)',
-                'TAND KV 9 (Thới Lai)', 'CQCSĐT TP.CT', 'CQCSĐT KV 1', 'CQCSĐT KV 2',
-                'CQCSĐT KV 3', 'CQCSĐT KV 4', 'CQCSĐT KV 5', 'CQCSĐT KV 6', 'CQCSĐT KV 7',
-                'CQCSĐT KV 8', 'CQCSĐT KV 9', 'VKS KV 1 (Ninh Kiều)', 'VKS KV 2 (Cái Răng)',
-                'VKS KV 3 (Bình Thủy)', 'VKS KV 4 (Ô Môn)', 'VKS KV 5 (Thốt Nốt)', 
-                'VKS KV 6 (Cờ Đỏ)', 'VKS KV 7 (Phong Điền)', 'VKS KV 8 (Vĩnh Thạnh)',
-                'VKS KV 9 (Thới Lai)', 'Khác (Ghi rõ trong Kết quả)'
+                'THADS TP.CT', 'THADS KV1','THADS KV2','THADS KV3','THADS KV4','THADS KV5','THADS KV6','THADS KV7',
+                'THADS KV8','THADS KV9','THADS KV10','THADS KV11','THADS KV12','THADS KV13','THADS KV14',
+                'TAND TP.CT', 'TAND KV1', 'TAND KV2','TAND KV3','TAND KV4','TAND KV5','TAND KV6','TAND KV7',
+                'TAND KV8','TAND KV9','TAND KV10','TAND KV11','TAND KV12','TAND KV13','TAND KV14',
+                'CQCSĐT TP.CT', 'Công an phường', 
+                'VKSND KV1',  'VKSND KV2', 'VKSND KV3', 'VKSND KV4', 'VKSND KV5', 'VKSND KV6', 'VKSND KV7',
+                'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14',
+                'Phòng 1', 'Phòng 2', 'Phòng 7', 'Phòng 8', 'Phòng 9', 'Phòng 10', 'Phòng 11', 'Phòng 15'
             ].sort(),
             'Phân loại': [
                 'Khiếu nại', 'Tố cáo', 'Kiến nghị/Phản ánh/Khác', 
@@ -745,9 +745,8 @@
             // Đã thêm danh mục đơn vị theo yêu cầu
             'Đơn vị': [
                 'Thành phố', // Đơn vị cấp TP (phòng ban/Thanh tra)
-                'VKS KV 1 (Ninh Kiều)', 'VKS KV 2 (Cái Răng)', 'VKS KV 3 (Bình Thủy)', 
-                'VKS KV 4 (Ô Môn)', 'VKS KV 5 (Thốt Nốt)', 'VKS KV 6 (Cờ Đỏ)', 
-                'VKS KV 7 (Phong Điền)', 'VKS KV 8 (Vĩnh Thạnh)', 'VKS KV 9 (Thới Lai)' // Các đơn vị cấp huyện
+                'VKSND KV1',  'VKSND KV2', 'VKSND KV3', 'VKSND KV4', 'VKSND KV5', 'VKSND KV6', 'VKSND KV7',
+                'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14' // Các đơn vị cấp huyện
             ]
         };
 
@@ -818,7 +817,7 @@
             // Lọc theo cấp độ xuất báo cáo
             let filteredList = donList;
             if (filterType === 'city') {
-                 // Chỉ lấy đơn của cấp Thành phố (Phòng ban/Thanh tra)
+                 // Chỉ lấy đơn của cấp Thành phố (Thanh tra/Khiếu tố)
                 filteredList = donList.filter(d => d.donVi === 'Thành phố');
             } else if (filterType === 'district') {
                 // Chỉ lấy đơn của cấp Huyện (VKS KV X)
