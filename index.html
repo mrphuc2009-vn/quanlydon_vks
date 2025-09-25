@@ -1592,37 +1592,29 @@
             const canCuText = getCanCuString(don.canCu).replace(/\;/g, ';\nTheo quy định tại');
 
             let proposalContent = `
-VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ CẦN THƠ
-THANH TRA - KHIẾU TỐ
-------------------------------------
-                                                          CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-                                                          Độc lập - Tự do - Hạnh phúc
-                                                        
-                                            Cần Thơ, ngày ${day} tháng ${month} năm ${year}
-
-Mẫu số 07/KT 
-(Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023)
-
-Kính gửi:
-- Lãnh đạo Viện;
-- Lãnh đạo Thanh tra - Khiếu tố.
+                                                            Mẫu số 07/KT
+                                                        (Theo QĐ số 28/QĐ-VKSTC 
+                                                        ngày 15 tháng 02 năm 2023)
+VIỆN KIỂM SÁT NHÂN DÂN                            CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+  THÀNH PHỐ CẦN THƠ                                  Độc lập - Tự do - Hạnh phúc
+THANH TRA - KHIẾU TỐ                                 ---------------------------
+        ---------                               Cần Thơ, ngày ${day} tháng ${month} năm ${year}
+                    PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN
+           Kính gửi:
+                   - Lãnh đạo Viện;
+                   - Lãnh đạo Thanh tra - Khiếu tố.
 
 Tôi tên: ${don.canBoPhanCong || 'Kiểm sát viên'}, chức danh: ${don.chucDanh || 'Chưa rõ'};
 Được phân công nghiên cứu, đề xuất xử lý đối với đơn của ${don.hoTen}, 
 địa chỉ: ${don.diaChi}, ghi ngày ${formatDate(don.ngayGhi)} 
 (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ngày ${formatDate(don.ngayNhan)} do ${don.nguonDon} chuyển đến).
-
-Đơn vị nhập: ${don.donVi}
-
 Nội dung đơn: ${don.noiDung}
-
 Căn cứ: ${canCuText} 
-
-${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
-
-                                                                 NGƯỜI ĐỀ XUẤT
-                                                                 (Ký, ghi rõ họ tên)
-                                                                 ${don.canBoPhanCong || 'Kiểm sát viên'}
+${don.deXuat ? '\nĐề xuất Lãnh đạo: ' + don.deXuat : ''}
+Cần Thơ, ngày ${day} tháng ${month} năm ${year}   Cần Thơ, ngày ${day} tháng ${month} năm ${year}
+         LÃNH ĐẠO ĐƠN VỊ ĐỀ XUẤT                              PHÊ DUYỆT CỦA LÃNH ĐẠO VIỆN                  NGƯỜI ĐỀ XUẤT
+           PHÓ CHÁNH THANH TRA                                          VIỆN TRƯỞNG
+                                                                                             ${don.canBoPhanCong || 'Kiểm sát viên'}
             `;
             
             document.getElementById('proposal-content').textContent = proposalContent.trim();
@@ -1631,7 +1623,7 @@ ${don.deXuat ? '\nĐề xuất: ' + don.deXuat : ''}
         
         function downloadProposalDoc() {
             const content = document.getElementById('proposal-content').textContent;
-            downloadFile(content, `PhiếuDeXuat_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.txt`, 'text/plain');
+            downloadFile(content, `PhiếuDeXuat_${new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')}.doc`, 'application/msword');
         }
 
         // --- INITIALIZATION ---
