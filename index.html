@@ -370,7 +370,7 @@
                     <div class="form-group">
                         <label for="chuc_danh">Chức danh:</label>
                         <select id="chuc_danh">
-                            <option value="Kiểm sát viên cao cấp">Kiểm sát viên cao cấp</option>
+                            <option value="Chọn">--Chọn--</option>
                             <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
                             <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
                             <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
@@ -414,8 +414,6 @@
                 <div class="btn-container" style="justify-content: flex-start;">
                     <button onclick="exportList()">Xuất Excel</button>
                     <button onclick="exportReport()">Xuất báo cáo</button>
-                    <button onclick="downloadJSON()">Sao lưu JSON</button>
-                    <button onclick="extractProposalSlip()">Trích xuất phiếu đề xuất</button>
                 </div>
                 <table>
                     <thead>
@@ -626,21 +624,23 @@
             'Nguồn đơn': [
                 'Bưu điện', 'Tiếp dân', 'Các cơ quan Đảng, Nhà nước', 'Cục ĐT, VKSTC', 'VKSND Cấp cao tại TP. HCM',
                 'VKSTC', 'Ban Nội chính T.U', 'Quốc hội', 'Thường trực HĐND T.P', 'UBND T.P', 'Đoàn ĐBQH T.P',
-                'Ban Nội chính Thành ủy', 'Thanh tra Chính phủ', 'Bộ Tư pháp', 'Bộ Công an', 'Bộ Tài chính',
+                'Ban Nội chính Thành ủy', 'Thanh tra Chính phủ', 'Bộ Tư pháp', 'Bộ Công an', 
                 'Bộ Xây dựng', 'Bộ Tài nguyên và Môi trường', 'Tòa án nhân dân tối cao', 'Tòa án nhân dân cấp cao',
-                'Tòa án nhân dân thành phố', 'Cơ quan CSĐT', 'Thanh tra thành phố', 'Thanh tra quận, huyện',
-                'Chi cục thi hành án', 'Sở Tư pháp', 'Sở Tài nguyên và Môi trường', 'Báo, đài', 'Hộp thư điện tử'
+                'Tòa án nhân dân thành phố', 'Cơ quan CSĐT', 'Thanh tra thành phố', 
+                'Sở Tư pháp', 'Sở Tài nguyên và Môi trường', 'Báo, đài'
             ],
             'Nơi chuyển đơn': [
-                'TAND thành phố Cần Thơ', 'UBND thành phố Cần Thơ', 'Cơ quan CSĐT Công an thành phố',
-                'Cục Thi hành án dân sự thành phố', 'Cục Điều tra VKSTC', 'TANDTC', 'Viện kiểm sát Quân sự Quân khu 9',
-                'VKSND Quận Ninh Kiều', 'VKSND Quận Bình Thủy', 'VKSND Quận Ô Môn', 'VKSND Quận Cái Răng',
-                'VKSND Quận Thốt Nốt', 'VKSND Huyện Vĩnh Thạnh', 'VKSND Huyện Cờ Đỏ', 'VKSND Huyện Phong Điền', 'VKSND Huyện Thới Lai',
-                'THADS KV1', 'THADS KV2', 'THADS KV3', 'THADS KV4', 'THADS KV5'
+                'TAND TP.CT', 'TAND KV1', 'TAND KV2','TAND KV3','TAND KV4','TAND KV5','TAND KV6','TAND KV7',
+                'TAND KV8','TAND KV9','TAND KV10','TAND KV11','TAND KV12','TAND KV13','TAND KV14',
+                'UBND thành phố Cần Thơ', 'CQCSĐT Công an TP.CT', 'Cục Điều tra VKSTC', 'TANDTC', 'Viện kiểm sát Quân sự Quân khu 9',
+                'Thi hành án dân sự thành phố',  'THADS KV1', 'THADS KV2', 'THADS KV3', 'THADS KV4', 'THADS KV5', 'THADS KV6', 'THADS KV7',
+                'THADS KV8', 'THADS KV9', 'THADS KV10', 'THADS KV11', 'THADS KV12', 'THADS KV13', 'THADS KV14',
+                'VKSND KV1', 'VKSND KV2','VKSND KV3','VKSND KV4','VKSND KV5','VKSND KV6','VKSND KV7','VKSND KV8','VKSND KV9','VKSND KV10',
+                'VKSND KV11','VKSND KV12','VKSND KV13','VKSND KV14'
             ],
             'Đơn vị': [
-                'VKSND Quận Ninh Kiều', 'VKSND Quận Bình Thủy', 'VKSND Quận Ô Môn', 'VKSND Quận Cái Răng',
-                'VKSND Quận Thốt Nốt', 'VKSND Huyện Vĩnh Thạnh', 'VKSND Huyện Cờ Đỏ', 'VKSND Huyện Phong Điền', 'VKSND Huyện Thới Lai'
+               'VKSND KV1', 'VKSND KV2','VKSND KV3','VKSND KV4','VKSND KV5','VKSND KV6','VKSND KV7',
+                'VKSND KV8','VKSND KV9','VKSND KV10', 'VKSND KV11','VKSND KV12','VKSND KV13','VKSND KV14'
             ]
         };
         
