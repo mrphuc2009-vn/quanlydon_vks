@@ -505,12 +505,7 @@
             </div>
             <div class="form-group">
                 <label for="chuc_danh">9. Chức danh:</label>
-                 <option value="Chọn">--Chọn--</option>
-                 <option value="Kiểm sát viên trung cấp">Kiểm sát viên trung cấp</option>
-                 <option value="Kiểm sát viên sơ cấp">Kiểm sát viên sơ cấp</option>
-                 <option value="Kiểm tra viên chính">Kiểm tra viên chính</option>
-                 <option value="Kiểm tra viên">Kiểm tra viên</option>
-                 <option value="Chuyên viên">Chuyên viên</option>
+                <input type="text" id="chuc_danh">
             </div>
             <div class="form-group">
                 <label for="noi_chuyen_don">10. Chuyển đến:</label>
@@ -610,6 +605,7 @@
                 <div class="form-group">
                     <label for="sua-tham_quyen">7. Thẩm quyền:</label>
                     <select id="sua-tham_quyen">
+                        <option value="Chọn">--Chọn--</option>
                         <option value="Thuộc thẩm quyền giải quyết">Thuộc thẩm quyền giải quyết</option>
                         <option value="Thuộc thẩm quyền kiểm sát">Thuộc thẩm quyền kiểm sát</option>
                         <option value="Không thuộc thẩm quyền">Không thuộc thẩm quyền</option>
@@ -1320,8 +1316,8 @@
             document.getElementById('ket_qua').value = '';
             
             // Gán giá trị mặc định theo người dùng
-            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : 'Kiểm sát viên A'; 
-            document.getElementById('chuc_danh').value = currentUser ? (currentUser.role === 'super_admin' ? 'Quản trị viên Chủ' : (currentUser.role === 'city_admin' ? 'Kiểm sát viên - TP' : 'Kiểm sát viên - Huyện')) : 'Kiểm sát viên'; 
+            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : ''; 
+            document.getElementById('chuc_danh').value = currentUser ? (currentUser.role === 'super_admin' ? 'Quản trị viên Chủ' : (currentUser.role === 'city_admin' ? 'Kiểm sát viên trung cấp' : 'Kiểm sát viên sơ cấp' : 'Kiểm tra viên chính' : 'Kiểm tra viên' : ' Chuyên viên')); 
             document.getElementById('don_vi_nhap').value = currentUser ? currentUser.donVi : 'Thành phố';
             document.getElementById('don_vi_nhap').disabled = (currentUser.role !== 'super_admin'); // Khóa trừ khi là Super Admin
             
