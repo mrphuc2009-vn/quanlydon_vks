@@ -494,8 +494,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="can_bo_phan_cong">8. Cán bộ phân công:</label>
-                <input type="text" id="can_bo_phan_cong">
+                <label for="can_bo_phan_cong">8. Phân công:</label>
+                <input type="text" id="">
             </div>
             <div class="form-group">
                 <label for="don_vi_nhap">8.1. Đơn vị nhập:</label>
@@ -505,7 +505,13 @@
             </div>
             <div class="form-group">
                 <label for="chuc_danh">9. Chức danh:</label>
-                <input type="text" id="chuc_danh">
+                <select id="new_role" required>
+                        <option value="kiem_sat_vien_so_cap">Kiểm sát viên sơ cấp</option>
+                        <option value="kiem_sat_vien_trung_cap">Kiểm sát viên trung cấp</option>
+                        <option value="kiem_tra_vien_chinh">Kiểm tra viên chính</option>
+                        <option value="kiem_tra_vien">Kiểm tra viên</option>
+                        <option value="chuyen_vien">Chuyên viên</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="noi_chuyen_don">10. Chuyển đến:</label>
@@ -621,7 +627,13 @@
                 </div>
                 <div class="form-group">
                     <label for="sua-chuc_danh">9. Chức danh:</label>
-                    <input type="text" id="sua-chuc_danh">
+                     <select id="new_role" required>
+                        <option value="kiem_sat_vien_so_cap">Kiểm sát viên sơ cấp</option>
+                        <option value="kiem_sat_vien_trung_cap">Kiểm sát viên trung cấp</option>
+                        <option value="kiem_tra_vien_chinh">Kiểm tra viên chính</option>
+                        <option value="kiem_tra_vien">Kiểm tra viên</option>
+                        <option value="chuyen_vien">Chuyên viên</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="sua-noi_chuyen_don">10. Chuyển đến:</label>
