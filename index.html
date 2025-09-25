@@ -1317,7 +1317,7 @@
             
             // Gán giá trị mặc định theo người dùng
             document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : ''; 
-            document.getElementById('chuc_danh').value = currentUser ? (currentUser.role === 'super_admin' ? 'Quản trị viên Chủ' : (currentUser.role === 'city_admin' ? 'Kiểm sát viên trung cấp' : 'Kiểm tra viên chính')) 'Kiểm sát viên sơ cấp' : 'Kiểm tra viên' : ' Chuyên viên'; 
+            document.getElementById('chuc_danh').value = currentUser ? (currentUser.role === 'super_admin' ? 'Quản trị viên Chủ' : (currentUser.role === 'city_admin' ? 'Kiểm sát viên TP')) 'Kiểm sát viên huyện'; 
             document.getElementById('don_vi_nhap').value = currentUser ? currentUser.donVi : 'Thành phố';
             document.getElementById('don_vi_nhap').disabled = (currentUser.role !== 'super_admin'); // Khóa trừ khi là Super Admin
             
