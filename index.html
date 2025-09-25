@@ -517,7 +517,7 @@
                 <input type="date" id="ngay_chuyen_don">
             </div>
             <div class="form-group full-width" style="grid-column: 1 / -1; display: block;">
-                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Điểm/Khoản/Điều/Văn bản):</label>
+                <label style="display: block; width: auto; margin-bottom: 5px;">12. Căn cứ (Quy định pháp luật):</label>
                 <div id="can_cu_container" style="width: 100%;">
                     </div>
                 <button type="button" class="add-btn" style="margin-top: 10px; width: 100%;" onclick="addCanCu()">Thêm Căn cứ</button>
@@ -531,7 +531,7 @@
                 <textarea id="de_xuat"></textarea>
             </div>
             <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                <label for="ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý:</label>
                 <textarea id="ket_qua"></textarea>
             </div>
         </div>
@@ -644,7 +644,7 @@
                     <textarea id="sua-de_xuat"></textarea>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1; display: block;">
-                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả (Trạng thái cuối cùng):</label>
+                    <label for="sua-ket_qua" style="display: block; width: auto; margin-bottom: 5px;">15. Kết quả xử lý:</label>
                     <textarea id="sua-ket_qua"></textarea>
                 </div>
             </div>
@@ -806,6 +806,7 @@
             return canCuArray.map(item => {
                 let parts = [];
                 if (item.diem) parts.push(`Điểm ${item.diem}`);
+                if (item.khoan) parts.push(`Khoản ${item.khoan}`);
                 if (item.dieu) parts.push(`Điều ${item.dieu}`);
                 if (item.vb) parts.push(`${item.vb}`); 
                 return parts.join(', ');
@@ -1236,7 +1237,8 @@
             div.className = 'can-cu-item';
             div.id = `${prefix}can_cu_item_${index}`;
             div.innerHTML = `
-                <input type="text" id="${prefix}can_cu_diem_${index}" placeholder="Điểm/Khoản">
+                <input type="text" id="${prefix}can_cu_diem_${index}" placeholder="Điểm">
+                <input type="text" id="${prefix}can_cu_khoan_${index}" placeholder="Khoản">
                 <input type="text" id="${prefix}can_cu_dieu_${index}" placeholder="Điều">
                 <input type="text" id="${prefix}can_cu_vb_${index}" placeholder="Văn bản">
                 <button type="button" onclick="removeCanCu(${index}, '${prefix}')">Xóa</button>
@@ -1287,7 +1289,8 @@
                 div.className = 'can-cu-item';
                 div.id = `${prefix}can_cu_item_${index}`;
                 div.innerHTML = `
-                    <input type="text" id="${prefix}can_cu_diem_${index}" placeholder="Điểm/Khoản" value="${item.diem || ''}">
+                    <input type="text" id="${prefix}can_cu_diem_${index}" placeholder="Điểm" value="${item.diem || ''}">
+                    <input type="text" id="${prefix}can_cu_khoan_${index}" placeholder="Khoản" value="${item.khoan || ''}">
                     <input type="text" id="${prefix}can_cu_dieu_${index}" placeholder="Điều" value="${item.dieu || ''}">
                     <input type="text" id="${prefix}can_cu_vb_${index}" placeholder="Văn bản" value="${item.vb || ''}">
                     <button type="button" onclick="removeCanCu(${index}, '${prefix}')">Xóa</button>
@@ -1511,7 +1514,7 @@
                 return;
             }
 
-            let csv = "STT,Ngày nhận,Nguồn đơn,Họ tên/ CQ/ TC,Địa chỉ,Đơn ghi ngày,Phân loại,Thẩm quyền,Cán bộ phân công,Chức danh,Đơn vị nhập,Nội dung (Tóm tắt),Đề xuất,Kết quả,Nơi chuyển đơn,Ngày chuyển đơn,Căn cứ (Điểm/Khoản/Điều/Văn bản)\n";
+            let csv = "STT,Ngày nhận,Nguồn đơn,Họ tên/ CQ/ TC,Địa chỉ,Đơn ghi ngày,Phân loại,Thẩm quyền,Cán bộ phân công,Chức danh,Đơn vị nhập,Nội dung (Tóm tắt),Đề xuất,Kết quả,Nơi chuyển đơn,Ngày chuyển đơn,Căn cứ (Quy định pháp luật)\n";
 
             donsToExport.forEach((don, index) => {
                 const canCuText = getCanCuString(don.canCu);
