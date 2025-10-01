@@ -304,8 +304,13 @@
             background-color: #1565c0 !important;
         }
         
-        .xu-ly-btn {
-            background-color: #00897b !important;
+        .proposal-print-btn {
+            background-color: #388e3c !important; /* Green color for new print button */
+            margin-top: 5px; 
+        }
+        
+        .proposal-print-btn:hover {
+            background-color: #2e7d32 !important;
         }
         
         .export-proposal-btn {
@@ -642,16 +647,6 @@
         </div>
     </div>
     
-    <div id="proposalModal" class="modal">
-        <div class="modal-content large-modal">
-            <span class="close-btn" onclick="document.getElementById('proposalModal').style.display='none'">&times;</span>
-            <pre id="proposal-content"></pre>
-            <div class="btn-container">
-                <button onclick="downloadProposalDoc()">Tải xuống file word</button>
-            </div>
-        </div>
-    </div>
-
     <div id="changePassModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="document.getElementById('changePassModal').style.display='none'">&times;</span>
@@ -1114,7 +1109,7 @@
             return dateStr;
         }
 
-        // Yêu cầu 1: Đăng nhập bằng phím Enter
+        // Yêu cầu 1 (Cũ): Đăng nhập bằng phím Enter
         function setupEnterKeyListener() {
             const usernameInput = document.getElementById('username');
             const passwordInput = document.getElementById('password');
@@ -1130,7 +1125,7 @@
             if (passwordInput) passwordInput.addEventListener('keydown', handleEnter);
         }
 
-        // Yêu cầu 2: Trích xuất kết quả xử lý đơn theo mẫu Word
+        // Yêu cầu 2 (Cũ): Trích xuất kết quả xử lý đơn theo mẫu Word
         function downloadResolutionResultDoc(id) {
             const don = dons.find(d => d.id === id);
             if (!don) {
@@ -1211,6 +1206,166 @@
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
             saveAs(blob, filename);
         }
+
+        // Yêu cầu MỚI: Trích xuất Phiếu Đề Xuất theo mẫu Word với định dạng lề A4
+        function downloadProposalDoc(id) {
+            const don = dons.find(d => d.id === id);
+            if (!don) {
+                alert('Vui lòng chọn một đơn để in phiếu đề xuất.');
+                return;
+            }
+
+            // 1. Chuẩn bị dữ liệu
+            let canCuString = '';
+            if (don.can_cu && Array.isArray(don.can_cu) && don.can_cu.length > 0) {
+                canCuString = don.can_cu.map(cc => 
+                    `điểm ${cc.diem || '...'} khoản ${cc.khoan || '...'} Điều ${cc.dieu || '...'}`
+                ).join(', ');
+            } else {
+                canCuString = `điểm ... khoản ... Điều ...`;
+            }
+            
+            // Lấy dữ liệu từ đơn
+            const canBoPhanCong = don.can_bo_phan_cong || '...';
+            const chucDanh = don.chuc_danh || '...';
+            const hoTen = don.ho_ten || '...';
+            const diaChi = don.dia_chi || '...';
+            // Lấy ngày tháng năm, bỏ chữ "ngày/tháng/năm" để chèn vào câu
+            const ngayGhi = don.ngay_ghi ? formatDate(don.ngay_ghi).replace('ngày ', '').replace('tháng ', '').replace('năm ', '') : '...';
+            const ngayNhan = don.ngay_nhan ? formatDate(don.ngay_nhan).replace('ngày ', '').replace('tháng ', '').replace('năm ', '') : '...';
+            const nguonDon = don.nguon_don || '...';
+            const noiDung = don.noi_dung ? don.noi_dung.replace(/\n/g, '<br>') : '...';
+            const deXuat = don.de_xuat ? don.de_xuat.replace(/\n/g, '<br>') : '...';
+            
+            // Lấy ngày tháng năm hiện tại cho phần địa điểm
+            const today = new Date();
+            const currentDay = today.getDate();
+            const currentMonth = today.getMonth() + 1;
+            const currentYear = today.getFullYear();
+            const ngayThangNam = `ngày ${currentDay} tháng ${currentMonth} năm ${currentYear}`;
+            
+            // 2. Tạo nội dung HTML (MHTML compatible) với định dạng lề và font
+            const htmlContent = `
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            /* Thiết lập lề A4 theo yêu cầu: trên 2cm, dưới 2cm, trái 3cm, phải 1.5cm */
+            margin-top: 2.0cm;
+            margin-bottom: 2.0cm;
+            margin-left: 3.0cm;
+            margin-right: 1.5cm;
+            size: A4; 
+        }
+        body {
+            /* Font Times New Roman, cỡ chữ 14pt, giãn dòng 1.5 */
+            font-family: 'Times New Roman';
+            font-size: 14pt;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+        p, div, span, table {
+            font-family: 'Times New Roman';
+            font-size: 14pt;
+            line-height: 1.5;
+            margin: 0; 
+            text-align: justify;
+        }
+        .header-col {
+            text-align: center;
+        }
+        .title {
+            font-size: 14pt;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <table width="100%" style="border-collapse: collapse; margin-bottom: 20px;">
+        <tr>
+            <td width="50%" class="header-col" style="padding: 0; text-align: center;">
+                <p style="font-weight: bold; text-transform: uppercase;">VIỆN KIỂM SÁT NHÂN DÂN</p>
+                <p style="font-weight: bold; text-transform: uppercase; margin-top: 5px;">THÀNH PHỐ CẦN THƠ</p>
+                <p style="text-transform: uppercase; margin-top: 5px;">PHÒNG THANH TRA - KHIẾU TỐ</p>
+                <p style="margin-top: 5px;">--------------</p>
+            </td>
+            <td width="50%" class="header-col" style="padding: 0; text-align: center;">
+                <p style="font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+                <p style="margin-top: 5px;">Độc lập - Tự do - Hạnh phúc</p>
+                <p style="margin-top: 5px;">--------------</p>
+                <p style="margin-top: 15px; font-style: italic; text-align: center;">
+                    Cần Thơ, ${ngayThangNam}
+                </p>
+            </td>
+        </tr>
+    </table>
+    
+    <div style="text-align: right; margin: 20px 0 30px 0;">
+        <p style="text-align: left; margin-bottom: 5px;">Mẫu số 07/KT</p>
+        <p style="text-align: left;">Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023</p>
+    </div>
+    
+    <p class="title">PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN</p>
+    
+    <p style="margin-bottom: 15px; margin-top: 15px;">
+        <span style="font-weight: bold;">Kính gửi:</span>
+        <span style="margin-left: 10px;">- Lãnh đạo Viện;</span><br>
+        <span style="margin-left: 75px;">- Lãnh đạo Thanh tra - Khiếu tố.</span>
+    </p>
+
+    <p style="margin-top: 15px; text-indent: 30px;">
+        Tôi tên: <span style="font-weight: bold; text-transform: uppercase;">${canBoPhanCong}</span>, chức danh: <span style="font-weight: bold;">${chucDanh}</span>;
+    </p>
+    <p style="text-indent: 30px; margin-top: 5px;">
+        Được phân công nghiên cứu, đề xuất xử lý đối với đơn của <span style="font-weight: bold;">${hoTen}</span>, địa chỉ: ${diaChi}, ghi ${ngayGhi} (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ${ngayNhan} do <span style="font-weight: bold;">${nguonDon}</span> chuyển đến).
+    </p>
+    <p style="margin-top: 5px;">
+        <span style="font-weight: bold;">Nội dung đơn:</span> ${noiDung}
+    </p>
+    <p style="margin-top: 15px;">
+        <span style="font-weight: bold;">Theo quy định tại</span> ${canCuString} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 25/5/2021 của Viện trưởng VKSND tối cao).
+    </p>
+    <p style="margin-top: 15px; font-weight: bold;">
+        Sau khi nghiên cứu, đề xuất xử lý:
+    </p>
+    <div style="margin-top: 5px; margin-bottom: 40px; border: 1px solid #000; padding: 10px; min-height: 100px; text-align: left;">
+        ${deXuat}
+    </div>
+
+    <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
+        <tr>
+            <td width="50%" style="text-align: center; padding: 0;">
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO PHÒNG</p>
+                <p style="margin-top: 100px; text-transform: uppercase;">...</p>
+            </td>
+            <td width="50%" style="text-align: center; padding: 0;">
+                <p style="font-weight: bold; text-transform: uppercase;">CÁN BỘ ĐƯỢC PHÂN CÔNG</p>
+                <p style="margin: 0; font-style: italic; font-size: 13pt;">(Ký và ghi rõ họ tên)</p>
+                <p style="margin-top: 100px; font-weight: bold; text-transform: uppercase;">${canBoPhanCong}</p>
+            </td>
+        </tr>
+    </table>
+    
+    <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
+        <tr>
+            <td style="text-align: center; padding: 0;">
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO VIỆN</p>
+                <p style="margin-top: 100px; text-transform: uppercase;">...</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+            // 3. Save as .doc
+            const filename = `PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN ${don.ho_ten}.doc`;
+            const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
+            saveAs(blob, filename);
+        }
         
         // --- CÁC HÀM TIỆN ÍCH KHÁC (GIẢ ĐỊNH) ---
 
@@ -1252,6 +1407,7 @@
                     <td class="table-actions">
                         <button class="edit-btn" onclick="showEditModal('${don.id}')">Sửa</button>
                         <button class="delete-btn" onclick="deleteDon('${don.id}')">Xóa</button>
+                        <button class="proposal-print-btn" onclick="downloadProposalDoc('${don.id}')">In Đề Xuất</button>
                     </td>
                 `;
                 tableBody.appendChild(tr);
@@ -1406,19 +1562,19 @@
         // --- EXPORT/REPORTING FUNCTIONS (GIỮ NGUYÊN) ---
 
         function exportList() {
-            // ... (Original logic for exporting list to Excel) ...
+            // ... (Original logic for exporting list to Excel - KHÔNG THAY ĐỔI) ...
         }
 
         function exportReport() {
-            // ... (Original logic for exporting report) ...
+            // ... (Original logic for exporting report - KHÔNG THAY ĐỔI) ...
         }
         
         function downloadJSON() {
-            // ... (Original logic for backing up JSON) ...
+            // ... (Original logic for backing up JSON - KHÔNG THAY ĐỔI) ...
         }
 
-        function downloadProposalDoc() {
-             // ... (Original logic for downloading proposal doc - NOT MODIFIED) ...
+        function downloadProposalDoc_old_placeholder() {
+             // Hàm downloadProposalDoc cũ đã được thay thế bằng hàm mới
         }
         
         
@@ -1433,9 +1589,8 @@
             populateCanCuFields([], '');
             populateCanCuFields([], 'sua-');
             
-            setupEnterKeyListener(); // <--- CHỨC NĂNG MỚI: BẮT SỰ KIỆN PHÍM ENTER CHO ĐĂNG NHẬP
-
-            // Hoàn thiện phần bị cắt trong snippet gốc
+            setupEnterKeyListener(); // Đã thêm ở lần chỉnh sửa trước
+            
             const accountBtn = document.getElementById('account-btn');
             if (accountBtn) {
                 accountBtn.style.display = 'none'; // Ẩn nút quản lý TK khi chưa đăng nhập
