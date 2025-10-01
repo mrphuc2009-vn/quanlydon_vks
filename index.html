@@ -1207,7 +1207,7 @@
             saveAs(blob, filename);
         }
 
-        // Yêu cầu MỚI: Trích xuất Phiếu Đề Xuất theo mẫu Word với định dạng lề A4
+        // Yêu cầu MỚI: Trích xuất Phiếu Đề Xuất theo mẫu Word với định dạng lề A4 và căn chỉnh chi tiết
         function downloadProposalDoc(id) {
             const don = dons.find(d => d.id === id);
             if (!don) {
@@ -1251,7 +1251,7 @@
     <meta charset="UTF-8">
     <style>
         @page {
-            /* Thiết lập lề A4 theo yêu cầu: trên 2cm, dưới 2cm, trái 3cm, phải 1.5cm */
+            /* Thiết lập lề A4: trên 2cm, dưới 2cm, trái 3cm, phải 1.5cm */
             margin-top: 2.0cm;
             margin-bottom: 2.0cm;
             margin-left: 3.0cm;
@@ -1271,8 +1271,16 @@
             font-size: 14pt;
             line-height: 1.5;
             margin: 0; 
+            /* Cài đặt thụt đầu dòng 1cm cho các đoạn văn thông thường */
+            text-indent: 1cm;
             text-align: justify;
         }
+        
+        /* Loại bỏ thụt đầu dòng cho các header, title và table */
+        .header-col p, .title, .model-info p, .model-info div, .kinh-gui-container p, .kinh-gui-item, table p, table td {
+            text-indent: 0 !important; 
+        }
+
         .header-col {
             text-align: center;
         }
@@ -1282,16 +1290,32 @@
             text-align: center;
             margin: 20px 0 10px 0;
         }
+        .model-info {
+            /* Vị trí góc trên bên phải */
+            float: right;
+            text-align: center;
+            width: 50%;
+            margin-bottom: 15px; /* Thêm khoảng cách sau phần header/model */
+        }
+
+        /* Căn chỉnh Kính gửi theo yêu cầu: Kính gửi 2cm, gạch đầu dòng 4.2cm */
+        .kinh-gui-container {
+            margin-bottom: 15px; 
+            /* Dùng padding-left để mô phỏng thụt đầu dòng cho Kính gửi (2cm) */
+            padding-left: 2cm; 
+            text-indent: 0; /* Đảm bảo không bị thụt lề kép */
+        }
+        .kinh-gui-item {
+            margin-top: 5px;
+            /* Căn lề cho 2 gạch đầu dòng: thụt vào 4.2cm */
+            padding-left: 2.2cm; /* 4.2cm - 2cm = 2.2cm (khoảng cách tương đối từ Kính gửi) */
+            text-indent: -0.2cm; /* Dấu gạch nằm ở vị trí 4cm, chữ nằm ở 4.2cm - Mô phỏng hiệu ứng tab */
+        }
     </style>
 </head>
 <body>
-    <table width="100%" style="border-collapse: collapse; margin-bottom: 20px;">
+    <table width="100%" style="border-collapse: collapse; margin-bottom: 0;">
         <tr>
-             <div style="text-align: right; margin: 20px 0 30px 0;">
-                <p style="text-align: left; margin-bottom: 5px;">Mẫu số 07/KT</p>
-                <p style="text-align: left;">Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023</p>
-            </div>
-    
             <td width="50%" class="header-col" style="padding: 0; text-align: center;">
                 <p style="font-weight: bold; text-transform: uppercase;">VIỆN KIỂM SÁT NHÂN DÂN</p>
                 <p style="font-weight: bold; text-transform: uppercase; margin-top: 5px;">THÀNH PHỐ CẦN THƠ</p>
@@ -1308,42 +1332,50 @@
             </td>
         </tr>
     </table>
-       
+    
+    <div class="model-info">
+        <p>Mẫu số 07/KT</p>
+        <p style="text-align: center;">Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023</p>
+    </div>
+
+    <div style="clear: both; height: 10px;"></div>
+    
     <p class="title">PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN</p>
     
-    <p style="margin-bottom: 15px; margin-top: 15px;">
-        <span style="font-weight: bold;">Kính gửi:</span>
-        <span style="margin-left: 10px;">- Lãnh đạo Viện;</span><br>
-        <span style="margin-left: 75px;">- Lãnh đạo Thanh tra - Khiếu tố.</span>
-    </p>
+    <div class="kinh-gui-container">
+        <p style="font-weight: bold;">Kính gửi:</p>
+        <p class="kinh-gui-item">- Lãnh đạo Viện;</p>
+        <p class="kinh-gui-item">- Lãnh đạo Thanh tra - Khiếu tố.</p>
+    </div>
 
-    <p style="margin-top: 15px; text-indent: 30px;">
+    <p style="margin-top: 15px;">
         Tôi tên: <span style="font-weight: bold; text-transform: uppercase;">${canBoPhanCong}</span>, chức danh: <span style="font-weight: bold;">${chucDanh}</span>;
     </p>
-    <p style="text-indent: 30px; margin-top: 5px;">
+    <p style="margin-top: 5px;">
         Được phân công nghiên cứu, đề xuất xử lý đối với đơn của <span style="font-weight: bold;">${hoTen}</span>, địa chỉ: ${diaChi}, ghi ${ngayGhi} (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ${ngayNhan} do <span style="font-weight: bold;">${nguonDon}</span> chuyển đến).
     </p>
     <p style="margin-top: 5px;">
-        <span style="font-weight: bold;">Nội dung đơn:</span> ${noiDung}
+        <span style="font-weight: bold; text-indent: 0;">Nội dung đơn:</span> ${noiDung}
     </p>
     <p style="margin-top: 15px;">
-        <span style="font-weight: bold;">Theo quy định tại</span> ${canCuString} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 25/5/2021 của Viện trưởng VKSND tối cao).
+        <span style="font-weight: bold; text-indent: 0;">Theo quy định tại</span> ${canCuString} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 25/5/2021 của Viện trưởng VKSND tối cao).
     </p>
-    <p style="margin-top: 15px; font-weight: bold;">
-        Tôi xin đề xuất: Lãnh đạo duyệt
+    <p style="margin-top: 15px; font-weight: bold; text-indent: 0;">
+        Sau khi nghiên cứu, đề xuất xử lý:
     </p>
-    <div>
+    <div style="margin-top: 5px; margin-bottom: 40px; border: 1px solid #000; padding: 10px; min-height: 100px; text-align: left; text-indent: 0;">
         ${deXuat}
     </div>
 
     <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
         <tr>
             <td width="50%" style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Lãnh đạo đơn vị đề xuất</p>
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO PHÒNG</p>
                 <p style="margin-top: 100px; text-transform: uppercase;">...</p>
             </td>
             <td width="50%" style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Người đề xuất</p>
+                <p style="font-weight: bold; text-transform: uppercase;">CÁN BỘ ĐƯỢC PHÂN CÔNG</p>
+                <p style="margin: 0; font-style: italic; font-size: 13pt;">(Ký và ghi rõ họ tên)</p>
                 <p style="margin-top: 100px; font-weight: bold; text-transform: uppercase;">${canBoPhanCong}</p>
             </td>
         </tr>
@@ -1352,7 +1384,7 @@
     <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
         <tr>
             <td style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Phê duyệt của Lãnh đạo Viện</p>
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO VIỆN</p>
                 <p style="margin-top: 100px; text-transform: uppercase;">...</p>
             </td>
         </tr>
