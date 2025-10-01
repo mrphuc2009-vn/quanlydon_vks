@@ -1101,6 +1101,7 @@
             if (!dateStr) return '...';
             const dateOnly = dateStr.includes('T') ? dateStr.substring(0, 10) : dateStr;
             const parts = dateOnly.split('-');
+            // Lưu ý: format lưu trữ trong Firebase là YYYY-MM-DD (nhận từ input type="date")
             if (parts.length === 3) {
                 const [year, month, day] = parts;
                 const formattedDay = day.padStart(2, '0');
@@ -1399,34 +1400,47 @@
             saveAs(blob, filename);
         }
         
-        // --- EXPORT/REPORTING FUNCTIONS (ĐÃ CẬP NHẬT) ---
+        // --- EXPORT/REPORTING FUNCTIONS (ĐÃ XÁC NHẬN DD/MM/YYYY) ---
 
         /**
          * Hàm chuyển đổi và chuẩn hóa đầu vào ngày tháng
          * @param {string} input - Chuỗi nhập vào (MM/YYYY hoặc DD/MM/YYYY-DD/MM/YYYY)
-         * @returns {object} { startDate, endDate, titlePeriod } (YYYY-MM-DD)
+         * @returns {object} { startDate, endDate, titlePeriod } (YYYY-MM-DD cho internal logic)
          */
         function parseDateRangeInput(input) {
             const result = { startDate: null, endDate: null, titlePeriod: '' };
 
-            // Định dạng: DD/MM/YYYY-DD/MM/YYYY
+            // 1. Định dạng: DD/MM/YYYY-DD/MM/YYYY (Khoảng thời gian)
+            // Regex: (\d{1,2}) là ngày (D), (\d{1,2}) là tháng (M), (\d{4}) là năm (Y)
             const rangeMatch = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
             if (rangeMatch) {
+                // rangeMatch[1]=D1, [2]=M1, [3]=Y1, [4]=D2, [5]=M2, [6]=Y2
                 const [_, d1, m1, y1, d2, m2, y2] = rangeMatch;
-                result.startDate = `${y1}-${m1.padStart(2, '0')}-${d1.padStart(2, '0')}`;
+                
+                // Chuyển sang định dạng YYYY-MM-DD để so sánh chuỗi:
+                result.startDate = `${y1}-${m1.padStart(2, '0')}-${d1.padStart(2, '0')}`; 
                 result.endDate = `${y2}-${m2.padStart(2, '0')}-${d2.padStart(2, '0')}`;
+                
+                // Giữ nguyên định dạng Việt Nam cho Tiêu đề báo cáo
                 result.titlePeriod = `Từ ngày ${d1}/${m1}/${y1} đến ngày ${d2}/${m2}/${y2}`;
                 return result;
             }
 
-            // Định dạng: MM/YYYY
+            // 2. Định dạng: MM/YYYY (Tháng)
+            // Regex: (\d{1,2}) là tháng (M), (\d{4}) là năm (Y)
             const monthMatch = input.match(/^(\d{1,2})\/(\d{4})$/);
             if (monthMatch) {
                 const [_, m, y] = monthMatch;
                 const paddedMonth = m.padStart(2, '0');
-                const lastDay = new Date(y, m, 0).getDate(); // Lấy ngày cuối cùng của tháng
+                
+                // Lấy ngày cuối cùng của tháng để tạo endDate chính xác
+                const lastDay = new Date(y, m, 0).getDate(); 
+                
+                // Chuyển sang định dạng YYYY-MM-DD để so sánh chuỗi:
                 result.startDate = `${y}-${paddedMonth}-01`;
                 result.endDate = `${y}-${paddedMonth}-${String(lastDay).padStart(2, '0')}`;
+                
+                // Giữ nguyên định dạng Việt Nam cho Tiêu đề báo cáo
                 result.titlePeriod = `Tháng ${paddedMonth}/${y}`;
                 return result;
             }
@@ -1448,17 +1462,17 @@
 
             const data = dons.map((don, index) => [
                 index + 1,
-                don.ngay_nhan || '',
+                don.ngay_nhan || '', // Giữ nguyên YYYY-MM-DD (Excel sẽ nhận biết là ngày)
                 don.nguon_don || '',
                 don.ho_ten || '',
                 don.dia_chi || '',
-                don.ngay_ghi || '',
+                don.ngay_ghi || '', // Giữ nguyên YYYY-MM-DD (Excel sẽ nhận biết là ngày)
                 don.phan_loai || '',
                 don.tham_quyen || '',
                 don.can_bo_phan_cong || '',
                 don.chuc_danh || '',
                 don.chuyen_den || '',
-                don.ngay_chuyen_don || '',
+                don.ngay_chuyen_don || '', // Giữ nguyên YYYY-MM-DD (Excel sẽ nhận biết là ngày)
                 (don.noi_dung || '').replace(/\n/g, ' - '),
                 (don.de_xuat || '').replace(/\n/g, ' - '),
                 (don.ket_qua || '').replace(/\n/g, ' - ')
@@ -1575,7 +1589,7 @@
             const { startDate, endDate, titlePeriod } = parseDateRangeInput(periodInput);
 
             if (!startDate || !endDate) {
-                alert('Định dạng mốc số liệu không hợp lệ. Vui lòng thử lại. (Ví dụ: 10/2025 hoặc 01/10/2025-31/10/2025)');
+                alert('Định dạng mốc số liệu không hợp lệ. Vui lòng nhập theo ví dụ: 10/2025 hoặc 01/10/2025-31/10/2025.');
                 return;
             }
 
@@ -1583,10 +1597,8 @@
             const filteredDons = dons.filter(don => {
                 // Lấy ngày nhận đơn, chỉ lấy phần YYYY-MM-DD
                 const ngayNhan = don.ngay_nhan ? don.ngay_nhan.substring(0, 10) : null; 
-                if (!ngayNhan) return false;
-
                 // So sánh chuỗi YYYY-MM-DD
-                return ngayNhan >= startDate && ngayNhan <= endDate;
+                return ngayNhan && ngayNhan >= startDate && ngayNhan <= endDate;
             });
             
             if (filteredDons.length === 0) {
@@ -1711,11 +1723,25 @@
         }
         
         function downloadJSON() {
-            // ... (Original logic for backing up JSON - KHÔNG THAY ĐỔI) ...
-        }
-
-        function downloadProposalDoc_old_placeholder() {
-             // Hàm downloadProposalDoc cũ đã được thay thế bằng hàm mới
+            // Lấy toàn bộ dữ liệu từ Firebase
+            database.ref('dons').once('value')
+                .then(snapshot => {
+                    const allData = snapshot.val();
+                    if (!allData) {
+                        alert('Không có dữ liệu để sao lưu.');
+                        return;
+                    }
+                    
+                    const jsonString = JSON.stringify(allData, null, 2);
+                    const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+                    
+                    const date = new Date().toISOString().slice(0, 10);
+                    saveAs(blob, `firebase_backup_dons_${date}.json`);
+                    alert('Sao lưu dữ liệu hoàn tất!');
+                })
+                .catch(error => {
+                    alert('Lỗi khi sao lưu dữ liệu: ' + error.message);
+                });
         }
         
         
