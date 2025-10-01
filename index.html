@@ -1401,6 +1401,39 @@
         
         // --- EXPORT/REPORTING FUNCTIONS (ĐÃ CẬP NHẬT) ---
 
+        /**
+         * Hàm chuyển đổi và chuẩn hóa đầu vào ngày tháng
+         * @param {string} input - Chuỗi nhập vào (MM/YYYY hoặc DD/MM/YYYY-DD/MM/YYYY)
+         * @returns {object} { startDate, endDate, titlePeriod } (YYYY-MM-DD)
+         */
+        function parseDateRangeInput(input) {
+            const result = { startDate: null, endDate: null, titlePeriod: '' };
+
+            // Định dạng: DD/MM/YYYY-DD/MM/YYYY
+            const rangeMatch = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s*-\s*(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (rangeMatch) {
+                const [_, d1, m1, y1, d2, m2, y2] = rangeMatch;
+                result.startDate = `${y1}-${m1.padStart(2, '0')}-${d1.padStart(2, '0')}`;
+                result.endDate = `${y2}-${m2.padStart(2, '0')}-${d2.padStart(2, '0')}`;
+                result.titlePeriod = `Từ ngày ${d1}/${m1}/${y1} đến ngày ${d2}/${m2}/${y2}`;
+                return result;
+            }
+
+            // Định dạng: MM/YYYY
+            const monthMatch = input.match(/^(\d{1,2})\/(\d{4})$/);
+            if (monthMatch) {
+                const [_, m, y] = monthMatch;
+                const paddedMonth = m.padStart(2, '0');
+                const lastDay = new Date(y, m, 0).getDate(); // Lấy ngày cuối cùng của tháng
+                result.startDate = `${y}-${paddedMonth}-01`;
+                result.endDate = `${y}-${paddedMonth}-${String(lastDay).padStart(2, '0')}`;
+                result.titlePeriod = `Tháng ${paddedMonth}/${y}`;
+                return result;
+            }
+
+            return result;
+        }
+
         function exportList() {
             if (dons.length === 0) {
                 alert('Không có dữ liệu đơn để xuất danh sách.');
@@ -1470,6 +1503,60 @@
         }
 
         /**
+         * Hàm áp dụng định dạng cho sheet báo cáo: kẻ ô, in đậm tiêu đề.
+         */
+        function applyReportStyles(ws, reportTitle, data) {
+             // Tiêu đề chính (hàng 0, cột 0)
+            const titleRef = XLSX.utils.encode_cell({ r: 0, c: 0 });
+            ws[titleRef] = {
+                v: reportTitle,
+                t: 's',
+                s: {
+                    font: { sz: 14, bold: true },
+                    alignment: { horizontal: "center", vertical: "center" }
+                }
+            };
+
+            // Merge ô tiêu đề (A1:B1)
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+            
+            const defaultCellStyle = {
+                border: { 
+                    top: { style: "thin" }, 
+                    bottom: { style: "thin" }, 
+                    left: { style: "thin" }, 
+                    right: { style: "thin" } 
+                },
+                alignment: { vertical: "top" }
+            };
+            
+            // Lặp qua tất cả các ô có nội dung trong data (từ hàng 1 trở đi) để áp dụng border
+            for (let R = 1; R < data.length; ++R) {
+                for (let C = 0; C < data[R].length; ++C) {
+                    const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                    const cell = ws[cellRef];
+                    
+                    if (cell && cell.v !== undefined) {
+                        cell.s = { ...defaultCellStyle }; 
+                        
+                        // In đậm cho các mục I, II, III, IV
+                        if (C === 0 && (cell.v.startsWith('I.') || cell.v.startsWith('II.') || cell.v.startsWith('III.') || cell.v.startsWith('IV.'))) {
+                            cell.s.font = { bold: true };
+                        }
+                    }
+                }
+            }
+            
+            // Thiết lập độ rộng cột
+            const wscols = [
+                { wch: 50 }, // Cột A: Tên tiêu chí
+                { wch: 15 }  // Cột B: Số liệu
+            ];
+            ws['!cols'] = wscols;
+        }
+
+
+        /**
          * Cập nhật hàm exportReport để xuất báo cáo thống kê cho 3 cấp:
          * 1. Cấp Thành phố (đơn chuyển đến các Phòng, TT-KT, Lưu đơn, Trả đơn, ...)
          * 2. Cấp Khu vực (đơn chuyển đến VKSND KV1-14)
@@ -1480,28 +1567,56 @@
                 alert('Không có dữ liệu đơn để xuất báo cáo.');
                 return;
             }
+
+            const periodInput = prompt('Vui lòng nhập mốc số liệu báo cáo:\n- Nhập tháng/năm (ví dụ: 10/2025) \n- Hoặc khoảng thời gian (ví dụ: 01/10/2025-31/10/2025)');
+
+            if (!periodInput) return; // User cancelled
+
+            const { startDate, endDate, titlePeriod } = parseDateRangeInput(periodInput);
+
+            if (!startDate || !endDate) {
+                alert('Định dạng mốc số liệu không hợp lệ. Vui lòng thử lại. (Ví dụ: 10/2025 hoặc 01/10/2025-31/10/2025)');
+                return;
+            }
+
+            // 1. Lọc đơn theo mốc thời gian (dựa trên ngay_nhan)
+            const filteredDons = dons.filter(don => {
+                // Lấy ngày nhận đơn, chỉ lấy phần YYYY-MM-DD
+                const ngayNhan = don.ngay_nhan ? don.ngay_nhan.substring(0, 10) : null; 
+                if (!ngayNhan) return false;
+
+                // So sánh chuỗi YYYY-MM-DD
+                return ngayNhan >= startDate && ngayNhan <= endDate;
+            });
             
-            // 1. Phân loại đơn: TP vs KV
+            if (filteredDons.length === 0) {
+                alert(`Không có đơn nào trong khoảng thời gian ${titlePeriod}. Vui lòng kiểm tra lại.`);
+                return;
+            }
+
+            const fullReportTitle = `SỐ LIỆU THỐNG KÊ ${titlePeriod.toUpperCase()} (TỔNG SỐ ĐƠN: ${filteredDons.length})`;
+
+            
+            // 2. Phân loại đơn: TP vs KV
             const kvUnits = lookupData['Đơn vị'].filter(u => u.startsWith('VKSND KV'));
             
             // Đơn cấp Thành phố: đơn chuyển đến các đơn vị không phải KV
-            const donsTP = dons.filter(don => {
+            const donsTP = filteredDons.filter(don => {
                 const chuyenDen = don.chuyen_den || '';
                 return !kvUnits.includes(chuyenDen);
             });
             
             // Đơn cấp Khu vực: đơn chuyển đến các VKSND Khu vực
-            const donsKV = dons.filter(don => {
+            const donsKV = filteredDons.filter(don => {
                 const chuyenDen = don.chuyen_den || '';
                 return kvUnits.includes(chuyenDen);
             });
             
-            const donsTong = dons; // Tổng là tất cả
+            const donsTong = filteredDons; // Tổng là tất cả
 
-            // 2. Hàm tổng hợp số liệu
-            function generateReportData(donList, title) {
+            // 3. Hàm tổng hợp số liệu
+            function generateReportData(donList) {
                 const report = {
-                    title: title,
                     tong_so: donList.length,
                     phan_loai: {},
                     tham_quyen: {},
@@ -1529,10 +1644,8 @@
                     }
                 });
 
-                // Chuyển đổi thành mảng cho Excel
+                // Chuyển đổi thành mảng cho Excel (bỏ hàng tiêu đề chính để xử lý riêng)
                 let data = [
-                    [{ v: report.title, s: { font: { sz: 14, bold: true }, alignment: { horizontal: "center" } } }],
-                    ['', ''],
                     ['I. TỔNG SỐ ĐƠN', report.tong_so],
                     ['', ''],
                     ['II. PHÂN LOẠI ĐƠN', ''],
@@ -1557,42 +1670,34 @@
                 return data;
             }
             
-            const reportTP = generateReportData(donsTP, 'BÁO CÁO THỐNG KÊ ĐƠN CẤP THÀNH PHỐ');
-            const reportKV = generateReportData(donsKV, 'BÁO CÁO THỐNG KÊ ĐƠN CẤP KHU VỰC');
-            const reportTong = generateReportData(donsTong, 'TỔNG HỢP BÁO CÁO THỐNG KÊ ĐƠN (TP & KV)');
+            const dataTong = generateReportData(donsTong);
+            const dataTP = generateReportData(donsTP);
+            const dataKV = generateReportData(donsKV);
 
-            // 3. Tạo Excel Workbook
+            // Thêm một hàng trống cho tiêu đề chính (sẽ được ghi đè)
+            dataTong.unshift(['']);
+            dataTP.unshift(['']);
+            dataKV.unshift(['']);
+            
+            // 4. Tạo Excel Workbook và áp dụng định dạng
             const wb = XLSX.utils.book_new();
             
-            // Thêm các sheets
-            const wsTong = XLSX.utils.aoa_to_sheet(reportTong);
-            const wsTP = XLSX.utils.aoa_to_sheet(reportTP);
-            const wsKV = XLSX.utils.aoa_to_sheet(reportKV);
-            
-            // Thiết lập độ rộng cột cơ bản và merge ô tiêu đề
-            const wscols = [
-                { wch: 50 }, // Cột A: Tên tiêu chí
-                { wch: 15 }  // Cột B: Số liệu
-            ];
-            
-            function applyStyles(ws) {
-                ws['!cols'] = wscols;
-                // Merge tiêu đề (A1:B1)
-                ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
-            }
-
-            applyStyles(wsTong);
-            applyStyles(wsTP);
-            applyStyles(wsKV);
-
-            // Thêm các sheets vào workbook
-            // Đặt sheet Tổng Hợp lên đầu tiên
+            // Sheet Tổng Hợp
+            const wsTong = XLSX.utils.aoa_to_sheet(dataTong);
+            applyReportStyles(wsTong, fullReportTitle, dataTong);
             XLSX.utils.book_append_sheet(wb, wsTong, "Tong_Hop_Bao_Cao"); 
+            
+            // Sheet Cấp Thành phố
+            const wsTP = XLSX.utils.aoa_to_sheet(dataTP);
+            applyReportStyles(wsTP, `BÁO CÁO CẤP THÀNH PHỐ ${titlePeriod.toUpperCase()} (TỔNG SỐ ĐƠN: ${donsTP.length})`, dataTP);
             XLSX.utils.book_append_sheet(wb, wsTP, "Cap_Thanh_Pho");
+
+            // Sheet Cấp Khu vực
+            const wsKV = XLSX.utils.aoa_to_sheet(dataKV);
+            applyReportStyles(wsKV, `BÁO CÁO CẤP KHU VỰC ${titlePeriod.toUpperCase()} (TỔNG SỐ ĐƠN: ${donsKV.length})`, dataKV);
             XLSX.utils.book_append_sheet(wb, wsKV, "Cap_Khu_Vuc");
             
-
-            // 4. Xuất file
+            // 5. Xuất file
             const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
 
             function s2ab(s) {
@@ -1602,7 +1707,7 @@
                 return buf;
             }
 
-            saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "Bao_Cao_Thong_Ke_Don_VKS.xlsx");
+            saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), `Bao_Cao_Thong_Ke_Don_VKS_${titlePeriod.replace(/[\/\s-]/g, '_')}.xlsx`);
         }
         
         function downloadJSON() {
