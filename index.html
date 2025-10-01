@@ -710,7 +710,8 @@
             ],
             'Đơn vị': [
                 'TT-KT',  'VKSND KV1',  'VKSND KV2', 'VKSND KV3', 'VKSND KV4', 'VKSND KV5', 'VKSND KV6', 'VKSND KV7',
-                'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14'
+                'VKSND KV8', 'VKSND KV9', 'VKSND KV10', 'VKSND KV11', 'VKSND KV12', 'VKSND KV13', 'VKSND KV14',
+                'Phòng 1', 'Phòng 2', 'Phòng 7', 'Phòng 8', 'Phòng 9', 'Phòng 10', 'Phòng 11', 'Phòng 15' // Bổ sung các phòng ban để phân loại TP
             ]
         };
         
@@ -1159,14 +1160,14 @@
     <table width="100%" style="margin-bottom: 20px; border-collapse: collapse;">
         <tr>
             <td width="50%" style="text-align: center; border: none; padding: 0;">
-                <p style="margin: 0;">VIỆN KIỂM SÁT NHÂN DÂN</p>
-                <p style="margin: 0;">THÀNH PHỐ CẦN THƠ</p>
-                <p style="margin: 0; font-weight: bold;">THANH TRA - KHIẾU TỐ</p>
+                <p style="margin: 0; font-weight: bold;">VIỆN KIỂM SÁT NHÂN DÂN</p>
+                <p style="margin: 0; font-weight: bold;">THÀNH PHỐ CẦN THƠ</p>
+                <p style="margin: 0;">PHÒNG THANH TRA - KHIẾU TỐ</p>
                 <p style="margin: 0;">--------------</p>
             </td>
             <td width="50%" style="text-align: center; border: none; padding: 0;">
                 <p style="margin: 0; font-weight: bold;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-                <p style="margin: 0; font-weight: bold;">Độc lập - Tự do - Hạnh phúc</p>
+                <p style="margin: 0;">Độc lập - Tự do - Hạnh phúc</p>
                 <p style="margin: 0;">--------------</p>
             </td>
         </tr>
@@ -1316,15 +1317,10 @@
 <body>
     <table width="100%" style="border-collapse: collapse; margin-bottom: 0;">
         <tr>
-            <div class="model-info">
-                <p style="text-align: center;">Mẫu số 07/KT</p>
-                <p style="text-align: center;">Theo QĐ số 28/QĐ-VKSTC</p> 
-                <p tyle="text-align: center;">ngày 15 tháng 02 năm 2023</p>
-            </div>
             <td width="50%" class="header-col" style="padding: 0; text-align: center;">
-                <p style="text-transform: uppercase;">VIỆN KIỂM SÁT NHÂN DÂN</p>
-                <p style="text-transform: uppercase; margin-top: 5px;">THÀNH PHỐ CẦN THƠ</p>
-                <p style="font-weight: bold; margin-top: 5px;">THANH TRA - KHIẾU TỐ</p>
+                <p style="font-weight: bold; text-transform: uppercase;">VIỆN KIỂM SÁT NHÂN DÂN</p>
+                <p style="font-weight: bold; text-transform: uppercase; margin-top: 5px;">THÀNH PHỐ CẦN THƠ</p>
+                <p style="text-transform: uppercase; margin-top: 5px;">PHÒNG THANH TRA - KHIẾU TỐ</p>
                 <p style="margin-top: 5px;">--------------</p>
             </td>
             <td width="50%" class="header-col" style="padding: 0; text-align: center;">
@@ -1337,7 +1333,12 @@
             </td>
         </tr>
     </table>
-       
+    
+    <div class="model-info">
+        <p>Mẫu số 07/KT</p>
+        <p style="text-align: center;">Theo QĐ số 28/QĐ-VKSTC ngày 15 tháng 02 năm 2023</p>
+    </div>
+
     <div style="clear: both; height: 10px;"></div>
     
     <p class="title">PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN</p>
@@ -1355,13 +1356,13 @@
         Được phân công nghiên cứu, đề xuất xử lý đối với đơn của <span style="font-weight: bold;">${hoTen}</span>, địa chỉ: ${diaChi}, ghi ${ngayGhi} (Viện kiểm sát nhân dân thành phố Cần Thơ nhận đơn ${ngayNhan} do <span style="font-weight: bold;">${nguonDon}</span> chuyển đến).
     </p>
     <p style="margin-top: 5px;">
-        <span style="text-indent: 0;">Nội dung đơn:</span> ${noiDung}
+        <span style="font-weight: bold; text-indent: 0;">Nội dung đơn:</span> ${noiDung}
     </p>
     <p style="margin-top: 15px;">
-        <span style="text-indent: 0;">Theo quy định tại</span> ${canCuString} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 25/5/2021 của Viện trưởng VKSND tối cao).
+        <span style="font-weight: bold; text-indent: 0;">Theo quy định tại</span> ${canCuString} Quy chế tiếp công dân, giải quyết khiếu nại, tố cáo và kiểm sát việc giải quyết khiếu nại, tố cáo trong hoạt động tư pháp (ban hành kèm theo Quyết định số: 222/QĐ-VKSTC ngày 25/5/2021 của Viện trưởng VKSND tối cao).
     </p>
     <p style="margin-top: 15px; font-weight: bold; text-indent: 0;">
-        Tôi xin đề xuất: Lãnh đạo duyệt 
+        Sau khi nghiên cứu, đề xuất xử lý:
     </p>
     <div style="margin-top: 5px; margin-bottom: 40px; border: 1px solid #000; padding: 10px; min-height: 100px; text-align: left; text-indent: 0;">
         ${deXuat}
@@ -1370,12 +1371,12 @@
     <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
         <tr>
             <td width="50%" style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Lãnh đạo đơn vị đề xuất</p>
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO PHÒNG</p>
                 <p style="margin-top: 100px; text-transform: uppercase;">...</p>
             </td>
             <td width="50%" style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Người đề xuấtG</p>
-               
+                <p style="font-weight: bold; text-transform: uppercase;">CÁN BỘ ĐƯỢC PHÂN CÔNG</p>
+                <p style="margin: 0; font-style: italic; font-size: 13pt;">(Ký và ghi rõ họ tên)</p>
                 <p style="margin-top: 100px; font-weight: bold; text-transform: uppercase;">${canBoPhanCong}</p>
             </td>
         </tr>
@@ -1384,8 +1385,8 @@
     <table width="100%" style="margin-top: 30px; border-collapse: collapse;">
         <tr>
             <td style="text-align: center; padding: 0;">
-                <p style="font-weight: bold; text-transform: uppercase;">Phê duyệt của Lãnh đạo Viện</p>
-                <p style="margin-top: 10px; text-transform: uppercase;">Nguyễn Thanh Liêm</p>
+                <p style="font-weight: bold; text-transform: uppercase;">Ý KIẾN CỦA LÃNH ĐẠO VIỆN</p>
+                <p style="margin-top: 100px; text-transform: uppercase;">...</p>
             </td>
         </tr>
     </table>
@@ -1397,6 +1398,221 @@
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
             saveAs(blob, filename);
         }
+        
+        // --- EXPORT/REPORTING FUNCTIONS (ĐÃ CẬP NHẬT) ---
+
+        function exportList() {
+            if (dons.length === 0) {
+                alert('Không có dữ liệu đơn để xuất danh sách.');
+                return;
+            }
+
+            const header = [
+                "STT", "Ngày nhận đơn", "Nguồn đơn", "Họ tên/Cơ quan/Tổ chức", "Địa chỉ", "Đơn ghi ngày", 
+                "Phân loại", "Thẩm quyền", "Cán bộ phân công", "Chức danh", "Chuyển đến", "Ngày chuyển đơn", 
+                "Nội dung đơn", "Đề xuất", "Kết quả"
+            ];
+
+            const data = dons.map((don, index) => [
+                index + 1,
+                don.ngay_nhan || '',
+                don.nguon_don || '',
+                don.ho_ten || '',
+                don.dia_chi || '',
+                don.ngay_ghi || '',
+                don.phan_loai || '',
+                don.tham_quyen || '',
+                don.can_bo_phan_cong || '',
+                don.chuc_danh || '',
+                don.chuyen_den || '',
+                don.ngay_chuyen_don || '',
+                (don.noi_dung || '').replace(/\n/g, ' - '),
+                (don.de_xuat || '').replace(/\n/g, ' - '),
+                (don.ket_qua || '').replace(/\n/g, ' - ')
+            ]);
+
+            const ws = XLSX.utils.aoa_to_sheet([header].concat(data));
+            
+            // Thiết lập độ rộng cột
+            const wscols = [
+                { wch: 5 },  // STT
+                { wch: 15 }, // Ngày nhận đơn
+                { wch: 15 }, // Nguồn đơn
+                { wch: 30 }, // Họ tên
+                { wch: 30 }, // Địa chỉ
+                { wch: 15 }, // Đơn ghi ngày
+                { wch: 20 }, // Phân loại
+                { wch: 25 }, // Thẩm quyền
+                { wch: 20 }, // Cán bộ
+                { wch: 20 }, // Chức danh
+                { wch: 20 }, // Chuyển đến
+                { wch: 15 }, // Ngày chuyển đơn
+                { wch: 50 }, // Nội dung
+                { wch: 50 }, // Đề xuất
+                { wch: 50 }  // Kết quả
+            ];
+            ws['!cols'] = wscols;
+
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Danh_Sach_Don");
+            
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+
+            saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "Danh_Sach_Don_VKS.xlsx");
+        }
+
+        /**
+         * Cập nhật hàm exportReport để xuất báo cáo thống kê cho 3 cấp:
+         * 1. Cấp Thành phố (đơn chuyển đến các Phòng, TT-KT, Lưu đơn, Trả đơn, ...)
+         * 2. Cấp Khu vực (đơn chuyển đến VKSND KV1-14)
+         * 3. Tổng 2 cấp
+         */
+        function exportReport() {
+            if (dons.length === 0) {
+                alert('Không có dữ liệu đơn để xuất báo cáo.');
+                return;
+            }
+            
+            // 1. Phân loại đơn: TP vs KV
+            const kvUnits = lookupData['Đơn vị'].filter(u => u.startsWith('VKSND KV'));
+            
+            // Đơn cấp Thành phố: đơn chuyển đến các đơn vị không phải KV
+            const donsTP = dons.filter(don => {
+                const chuyenDen = don.chuyen_den || '';
+                return !kvUnits.includes(chuyenDen);
+            });
+            
+            // Đơn cấp Khu vực: đơn chuyển đến các VKSND Khu vực
+            const donsKV = dons.filter(don => {
+                const chuyenDen = don.chuyen_den || '';
+                return kvUnits.includes(chuyenDen);
+            });
+            
+            const donsTong = dons; // Tổng là tất cả
+
+            // 2. Hàm tổng hợp số liệu
+            function generateReportData(donList, title) {
+                const report = {
+                    title: title,
+                    tong_so: donList.length,
+                    phan_loai: {},
+                    tham_quyen: {},
+                    ket_qua: { 'Đã xử lý': 0, 'Chưa xử lý': 0 }
+                };
+
+                const phanLoaiTypes = ['Khiếu nại', 'Tố cáo', 'Kiến nghị/Phản ánh/Khác', 'Yêu cầu bồi thường thiệt hại', 'Đề nghị KN, GĐT, TT', 'Đề nghị kiểm tra QĐGQKN', 'Tin báo/Tố giác tội phạm trong HĐTP'];
+                phanLoaiTypes.forEach(type => report.phan_loai[type] = 0);
+
+                const thamQuyenTypes = ['Thuộc thẩm quyền giải quyết', 'Thuộc thẩm quyền kiểm sát', 'Không thuộc thẩm quyền'];
+                thamQuyenTypes.forEach(type => report.tham_quyen[type] = 0);
+                
+                // Tính toán
+                donList.forEach(don => {
+                    if (don.phan_loai && report.phan_loai.hasOwnProperty(don.phan_loai)) {
+                        report.phan_loai[don.phan_loai]++;
+                    }
+                    if (don.tham_quyen && report.tham_quyen.hasOwnProperty(don.tham_quyen)) {
+                        report.tham_quyen[don.tham_quyen]++;
+                    }
+                    if (don.ket_qua && don.ket_qua.trim() !== '') {
+                        report.ket_qua['Đã xử lý']++;
+                    } else {
+                        report.ket_qua['Chưa xử lý']++;
+                    }
+                });
+
+                // Chuyển đổi thành mảng cho Excel
+                let data = [
+                    [{ v: report.title, s: { font: { sz: 14, bold: true }, alignment: { horizontal: "center" } } }],
+                    ['', ''],
+                    ['I. TỔNG SỐ ĐƠN', report.tong_so],
+                    ['', ''],
+                    ['II. PHÂN LOẠI ĐƠN', ''],
+                ];
+                
+                phanLoaiTypes.forEach(type => {
+                    data.push([`  - ${type}`, report.phan_loai[type] || 0]);
+                });
+                
+                data.push(['', '']);
+                data.push(['III. THẨM QUYỀN', '']);
+                
+                thamQuyenTypes.forEach(type => {
+                    data.push([`  - ${type}`, report.tham_quyen[type] || 0]);
+                });
+                
+                data.push(['', '']);
+                data.push(['IV. KẾT QUẢ XỬ LÝ', '']);
+                data.push(['  - Đã xử lý', report.ket_qua['Đã xử lý']]);
+                data.push(['  - Chưa xử lý', report.ket_qua['Chưa xử lý']]);
+                
+                return data;
+            }
+            
+            const reportTP = generateReportData(donsTP, 'BÁO CÁO THỐNG KÊ ĐƠN CẤP THÀNH PHỐ');
+            const reportKV = generateReportData(donsKV, 'BÁO CÁO THỐNG KÊ ĐƠN CẤP KHU VỰC');
+            const reportTong = generateReportData(donsTong, 'TỔNG HỢP BÁO CÁO THỐNG KÊ ĐƠN (TP & KV)');
+
+            // 3. Tạo Excel Workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Thêm các sheets
+            const wsTong = XLSX.utils.aoa_to_sheet(reportTong);
+            const wsTP = XLSX.utils.aoa_to_sheet(reportTP);
+            const wsKV = XLSX.utils.aoa_to_sheet(reportKV);
+            
+            // Thiết lập độ rộng cột cơ bản và merge ô tiêu đề
+            const wscols = [
+                { wch: 50 }, // Cột A: Tên tiêu chí
+                { wch: 15 }  // Cột B: Số liệu
+            ];
+            
+            function applyStyles(ws) {
+                ws['!cols'] = wscols;
+                // Merge tiêu đề (A1:B1)
+                ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+            }
+
+            applyStyles(wsTong);
+            applyStyles(wsTP);
+            applyStyles(wsKV);
+
+            // Thêm các sheets vào workbook
+            // Đặt sheet Tổng Hợp lên đầu tiên
+            XLSX.utils.book_append_sheet(wb, wsTong, "Tong_Hop_Bao_Cao"); 
+            XLSX.utils.book_append_sheet(wb, wsTP, "Cap_Thanh_Pho");
+            XLSX.utils.book_append_sheet(wb, wsKV, "Cap_Khu_Vuc");
+            
+
+            // 4. Xuất file
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+
+            saveAs(new Blob([s2ab(wbout)], { type: "application/octet-stream" }), "Bao_Cao_Thong_Ke_Don_VKS.xlsx");
+        }
+        
+        function downloadJSON() {
+            // ... (Original logic for backing up JSON - KHÔNG THAY ĐỔI) ...
+        }
+
+        function downloadProposalDoc_old_placeholder() {
+             // Hàm downloadProposalDoc cũ đã được thay thế bằng hàm mới
+        }
+        
         
         // --- CÁC HÀM TIỆN ÍCH KHÁC (GIẢ ĐỊNH) ---
 
@@ -1590,25 +1806,6 @@
             return dateString.substring(0, 10);
         }
 
-        // --- EXPORT/REPORTING FUNCTIONS (GIỮ NGUYÊN) ---
-
-        function exportList() {
-            // ... (Original logic for exporting list to Excel - KHÔNG THAY ĐỔI) ...
-        }
-
-        function exportReport() {
-            // ... (Original logic for exporting report - KHÔNG THAY ĐỔI) ...
-        }
-        
-        function downloadJSON() {
-            // ... (Original logic for backing up JSON - KHÔNG THAY ĐỔI) ...
-        }
-
-        function downloadProposalDoc_old_placeholder() {
-             // Hàm downloadProposalDoc cũ đã được thay thế bằng hàm mới
-        }
-        
-        
         // --- INITIALIZATION ---
         
         function init() {
