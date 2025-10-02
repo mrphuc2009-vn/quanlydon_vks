@@ -378,7 +378,7 @@
     <div id="main-container">
         <div class="main-content">
             <div class="sidebar">
-                <h2>Lưu đơn mới</h2>
+                <h2>Nhập đơn mới</h2>
                 <div class="form-section">
                     <div class="form-group">
                         <label for="ngay_nhan">Ngày nhận đơn:</label>
@@ -472,7 +472,7 @@
                     <textarea id="ket_qua"></textarea>
                 </div>
                 <input type="hidden" id="edit-id">
-                <button onclick="saveDon()">Lưu đơn</button>
+                <button onclick="saveDon()">Xong</button>
             </div>
 
             <div class="main-panel">
@@ -481,7 +481,7 @@
                     <button onclick="exportList()">Xuất Danh sách đơn</button>
                     <button onclick="exportReport()">Xuất báo cáo</button>
                     <button onclick="downloadJSON()">Sao lưu JSON</button>
-                    <button class="export-btn" onclick="downloadResolutionResultDoc(currentSelectedId)">Trích xuất kết quả xử lý đơn</button>
+                    <button class="export-proposal-btn" onclick="downloadResolutionResultDoc(currentSelectedId)">Trích xuất kết quả xử lý đơn</button>
                 </div>
                 <table>
                     <thead>
@@ -519,7 +519,7 @@
                 </div>
                 <div class="form-group">
                     <label for="new-role">Vai trò:</label>
-                    <select id="new-role">
+                    <select id="new-role" onchange="capNhatDonViTheoVaiTro()">
                         <option value="admin">Quản trị viên (admin)</option>
                         <option value="super_admin">Quản trị viên cấp cao (super_admin)</option>
                         <option value="manager_TP">Quản lý cấp Thành phố</option>
@@ -763,286 +763,6 @@
         }
 
         // Các hàm quản lý tài khoản, đổi mật khẩu (Giữ nguyên)
-        function showChangePassModal() { /* ... code ... */ }
-        function changePassword() { /* ... code ... */ }
-        function handleForgotPassword() { /* ... code ... */ }
-        function initializeDefaultAccounts() { /* ... code ... */ }
-        function capNhatDonViTheoVaiTro() { /* ... code ... */ }
-        function showAccountsModal() { /* ... code ... */ }
-        function displayAccounts() { /* ... code ... */ }
-        function createAccount() { /* ... code ... */ }
-        function deleteAccount(username) { /* ... code ... */ }
-        function resetPassword(username) { /* ... code ... */ }
-        
-        // --- DATA INPUT/OUTPUT UTILITIES ---
-        function initSelectOptions() { /* ... code ... */ }
-        function capNhatThamQuyenMacDinh(prefix = '') { /* ... code ... */ }
-        function getCanCuData(prefix = '') { /* ... code ... */ }
-        function populateCanCuFields(canCuArray, prefix = '') { /* ... code ... */ }
-        function addCanCu(prefix = '') { /* ... code ... */ }
-        function removeCanCu(element) { /* ... code ... */ }
-        function displayDonList(list) { /* ... code ... */ }
-        function formatCanCu(canCuArray) { /* ... code ... */ }
-        function exportList() { /* ... code ... */ }
-        function exportReport() { /* ... code ... */ }
-        function downloadJSON() { /* ... code ... */ }
-        function generateResolutionResultDoc(don) { /* ... code ... */ }
-        function downloadResolutionResultDoc(donId) { /* ... code ... */ }
-        function generateProposalContent(don) { /* ... code ... */ }
-        function showProposal(donId) { /* ... code ... */ }
-        function downloadProposalDoc() { /* ... code ... */ }
-        
-        // --- FIREBASE DATA FUNCTIONS (CÓ CHỈNH SỬA) ---
-
-        /**
-         * HÀM QUAN TRỌNG: Tải và lọc dữ liệu đơn dựa trên vai trò người dùng.
-         */
-        function updateTable() {
-            if (!currentUser) return;
-
-            const donRef = database.ref('don');
-            let query;
-
-            if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
-                // 1. Tài khoản 'super_admin' hoặc 'admin': Tải TẤT CẢ dữ liệu
-                query = donRef; 
-                console.log("Admin/Super_Admin: Tải toàn bộ dữ liệu.");
-            } else if (currentUser.unit) {
-                // 2. Tài khoản con: Chỉ tải dữ liệu của đơn vị mình.
-                // Lọc theo trường 'don_vi_xu_ly'
-                query = donRef.orderByChild('don_vi_xu_ly').equalTo(currentUser.unit);
-                console.log(`Tài khoản ${currentUser.username} (${currentUser.role}) đang tải dữ liệu lọc theo đơn vị: ${currentUser.unit}`);
-            } else {
-                // Trường hợp tài khoản con nhưng thiếu thông tin đơn vị (lý thuyết không xảy ra)
-                console.error("Lỗi phân quyền: Không tìm thấy đơn vị của tài khoản.");
-                document.getElementById('don-body').innerHTML = '<tr><td colspan="8">Không thể tải dữ liệu. Tài khoản thiếu thông tin đơn vị.</td></tr>';
-                return;
-            }
-
-            // Thực hiện lắng nghe dữ liệu
-            query.on('value', (snapshot) => {
-                const donList = [];
-                snapshot.forEach((childSnapshot) => {
-                    const don = childSnapshot.val();
-                    don.id = childSnapshot.key;
-                    donList.push(don);
-                });
-
-                dons = donList; // Cập nhật biến toàn cục
-                displayDonList(dons); // Hiển thị dữ liệu lên bảng
-            }, (error) => {
-                console.error("Lỗi khi tải dữ liệu đơn: ", error);
-                document.getElementById('don-body').innerHTML = `<tr><td colspan="8">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
-            });
-        }
-
-        /**
-         * HÀM QUAN TRỌNG: Lưu đơn mới/Chỉnh sửa đơn.
-         * Đảm bảo lưu trường 'don_vi_xu_ly'
-         */
-        function saveDon() {
-            if (!currentUser) {
-                alert('Vui lòng đăng nhập trước.');
-                return;
-            }
-            const id = document.getElementById('edit-id').value;
-            const canCuArray = getCanCuData(); 
-            const ngayNhan = document.getElementById('ngay_nhan').value;
-            const hoTen = document.getElementById('ho_ten').value;
-
-            if (!ngayNhan || !hoTen) {
-                alert('Vui lòng nhập đầy đủ Ngày nhận đơn và Họ tên/Cơ quan/Tổ chức.');
-                return;
-            }
-
-            const donData = {
-                ngay_nhan: ngayNhan,
-                nguon_don: document.getElementById('nguon_don').value,
-                ho_ten: hoTen,
-                dia_chi: document.getElementById('dia_chi').value,
-                ngay_ghi: document.getElementById('ngay_ghi').value,
-                phan_loai: document.getElementById('phan_loai').value,
-                tham_quyen: document.getElementById('tham_quyen').value,
-                can_bo_phan_cong: document.getElementById('can_bo_phan_cong').value,
-                chuc_danh: document.getElementById('chuc_danh').value,
-                chuyen_den: document.getElementById('chuyen_den').value,
-                ngay_chuyen_don: document.getElementById('ngay_chuyen_don').value,
-                noi_dung: document.getElementById('noi_dung').value,
-                de_xuat: document.getElementById('de_xuat').value,
-                ket_qua: document.getElementById('ket_qua').value,
-                can_cu: canCuArray,
-                // THÊM TRƯỜNG PHÂN QUYỀN VÀO ĐÂY
-                don_vi_xu_ly: currentUser.unit, 
-            };
-
-            if (id) {
-                // Chỉnh sửa đơn
-                database.ref('don/' + id).update(donData)
-                    .then(() => {
-                        alert('Cập nhật đơn thành công!');
-                        clearForm();
-                    })
-                    .catch(error => {
-                        alert('Lỗi khi cập nhật đơn: ' + error.message);
-                    });
-            } else {
-                // Lưu đơn mới
-                database.ref('don').push(donData)
-                    .then(() => {
-                        alert('Lưu đơn thành công!');
-                        clearForm();
-                    })
-                    .catch(error => {
-                        alert('Lỗi khi lưu đơn: ' + error.message);
-                    });
-            }
-        }
-
-        function clearForm() {
-            // Xóa nội dung form nhập liệu
-            document.getElementById('edit-id').value = '';
-            document.getElementById('ngay_nhan').value = new Date().toISOString().slice(0, 10);
-            document.getElementById('nguon_don').value = '';
-            document.getElementById('ho_ten').value = '';
-            document.getElementById('dia_chi').value = '';
-            document.getElementById('ngay_ghi').value = '';
-            document.getElementById('phan_loai').value = 'Khiếu nại';
-            document.getElementById('tham_quyen').value = 'Chọn';
-            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : ''; // Giữ lại tên đăng nhập
-            document.getElementById('chuc_danh').value = 'Chọn';
-            document.getElementById('chuyen_den').value = '';
-            document.getElementById('ngay_chuyen_don').value = '';
-            document.getElementById('noi_dung').value = '';
-            document.getElementById('de_xuat').value = '';
-            document.getElementById('ket_qua').value = '';
-            
-            // Xóa căn cứ và thêm lại một dòng trống
-            populateCanCuFields([], ''); 
-            
-            capNhatThamQuyenMacDinh();
-        }
-
-        function editDon(id) {
-            const don = dons.find(d => d.id === id);
-            if (!don) {
-                alert('Không tìm thấy đơn để chỉnh sửa.');
-                return;
-            }
-            
-            // Đổ dữ liệu vào Modal sửa đổi
-            document.getElementById('sua-ngay_nhan').value = don.ngay_nhan || '';
-            document.getElementById('sua-nguon_don').value = don.nguon_don || '';
-            document.getElementById('sua-ho_ten').value = don.ho_ten || '';
-            document.getElementById('sua-dia_chi').value = don.dia_chi || '';
-            document.getElementById('sua-ngay_ghi').value = don.ngay_ghi || '';
-            document.getElementById('sua-phan_loai').value = don.phan_loai || 'Chọn';
-            document.getElementById('sua-tham_quyen').value = don.tham_quyen || 'Chọn';
-            document.getElementById('sua-can_bo_phan_cong').value = don.can_bo_phan_cong || '';
-            document.getElementById('sua-chuc_danh').value = don.chuc_danh || 'Chọn';
-            document.getElementById('sua-chuyen_den').value = don.chuyen_den || ''; 
-            document.getElementById('sua-ngay_chuyen_don').value = don.ngay_chuyen_don || '';
-            populateCanCuFields(don.can_cu, 'sua-');
-            document.getElementById('sua-noi_dung').value = don.noi_dung || '';
-            document.getElementById('sua-de_xuat').value = don.de_xuat || '';
-            document.getElementById('sua-ket_qua').value = don.ket_qua || '';
-            
-            document.getElementById('editModal').style.display = 'flex';
-
-            let editIdModal = document.getElementById('edit-id-modal');
-            if (!editIdModal) {
-                editIdModal = document.createElement('input');
-                editIdModal.type = 'hidden';
-                editIdModal.id = 'edit-id-modal';
-                document.querySelector('.modal-content.large-modal').appendChild(editIdModal);
-            }
-            editIdModal.value = id;
-        }
-
-
-        function updateDon() {
-            if (!currentUser) {
-                alert('Vui lòng đăng nhập trước.');
-                return;
-            }
-            const id = document.getElementById('edit-id-modal').value;
-            const canCuArray = getCanCuData('sua-'); 
-
-            if (!id) {
-                alert('Lỗi: Không tìm thấy ID đơn để cập nhật.');
-                return;
-            }
-
-            const donData = {
-                ngay_nhan: document.getElementById('sua-ngay_nhan').value,
-                nguon_don: document.getElementById('sua-nguon_don').value,
-                ho_ten: document.getElementById('sua-ho_ten').value,
-                dia_chi: document.getElementById('sua-dia_chi').value,
-                ngay_ghi: document.getElementById('sua-ngay_ghi').value,
-                phan_loai: document.getElementById('sua-phan_loai').value,
-                tham_quyen: document.getElementById('sua-tham_quyen').value,
-                can_bo_phan_cong: document.getElementById('sua-can_bo_phan_cong').value,
-                chuc_danh: document.getElementById('sua-chuc_danh').value,
-                chuyen_den: document.getElementById('sua-chuyen_den').value,
-                ngay_chuyen_don: document.getElementById('sua-ngay_chuyen_don').value,
-                noi_dung: document.getElementById('sua-noi_dung').value,
-                de_xuat: document.getElementById('sua-de_xuat').value,
-                ket_qua: document.getElementById('sua-ket_qua').value,
-                can_cu: canCuArray,
-                // Đảm bảo trường phân quyền được giữ lại hoặc cập nhật (Tốt nhất là giữ lại unit của người đã nhập ban đầu)
-                // Tuy nhiên, để đảm bảo người sửa có thể thấy đơn sau khi sửa, 
-                // ta sẽ chỉ cập nhật trường này nếu nó chưa tồn tại. 
-                // Trong trường hợp này, ta giả định unit không đổi sau khi đơn được nhập.
-                // Để đơn giản và đảm bảo tính năng phân quyền: ta sẽ không sửa trường này.
-                // Nếu muốn sửa, cần phải có logic phức tạp hơn.
-                // Tốt nhất, ta sẽ giữ lại giá trị cũ của don_vi_xu_ly.
-            };
-
-            // Lấy đơn vị hiện tại của đơn để đảm bảo không bị ghi đè nếu nó đã được lưu
-            const existingDon = dons.find(d => d.id === id);
-            if (existingDon && existingDon.don_vi_xu_ly) {
-                donData.don_vi_xu_ly = existingDon.don_vi_xu_ly;
-            } else {
-                 donData.don_vi_xu_ly = currentUser.unit;
-            }
-
-            database.ref('don/' + id).update(donData)
-                .then(() => {
-                    alert('Cập nhật đơn thành công!');
-                    document.getElementById('editModal').style.display = 'none';
-                })
-                .catch(error => {
-                    alert('Lỗi khi cập nhật đơn: ' + error.message);
-                });
-        }
-
-        function deleteDon(id) { /* ... code ... */ }
-
-        // --- Hàm khác (Giữ nguyên) ---
-
-        function showAccountsModal() {
-             if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
-                displayAccounts();
-                document.getElementById('accountsModal').style.display = 'flex';
-            } else {
-                alert('Bạn không có quyền quản lý tài khoản.');
-            }
-        }
-        
-        function deleteDon(id) {
-            if (confirm('Bạn có chắc chắn muốn xóa đơn này không?')) {
-                database.ref('don/' + id).remove()
-                    .then(() => {
-                        alert('Xóa đơn thành công!');
-                    })
-                    .catch(error => {
-                        alert('Lỗi khi xóa đơn: ' + error.message);
-                    });
-            }
-        }
-        
-        // --- CÁC HÀM KHÁC DƯỚI ĐÂY ĐƯỢC GIỮ NGUYÊN (NHƯNG CẦN ĐỊNH NGHĨA LẠI ĐỂ CHẠY) ---
-        // (Do tôi không có toàn bộ code gốc, tôi sẽ chèn phần định nghĩa cho các hàm cần thiết để cấu trúc chạy được)
-        
         function showChangePassModal() { 
             if (!currentUser) { alert('Vui lòng đăng nhập trước.'); return; } 
             document.getElementById('old-password').value = ''; 
@@ -1091,8 +811,8 @@
             database.ref('accounts').once('value').then(snapshot => { 
                 if (!snapshot.exists()) { 
                     const defaultAccounts = { 
+                        "superadmin": { "password": "123", "role": "super_admin", "unit": "TT-KT" }, 
                         "adminct": { "password": "123", "role": "admin", "unit": "TT-KT" }, 
-                        "quanlyTP": { "password": "123", "role": "manager_TP", "unit": "TT-KT" }, 
                         "userKV1": { "password": "123", "role": "user_KV", "unit": "VKSND KV1" } 
                         // Bạn có thể thêm các tài khoản mặc định khác nếu cần
                     };
@@ -1131,6 +851,15 @@
              }
         }
 
+        function showAccountsModal() {
+             if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
+                displayAccounts();
+                document.getElementById('accountsModal').style.display = 'flex';
+            } else {
+                alert('Bạn không có quyền quản lý tài khoản.');
+            }
+        }
+        
         function displayAccounts() {
             database.ref('accounts').once('value').then(snapshot => {
                 accounts = snapshot.val() || {};
@@ -1362,7 +1091,239 @@
                 `${c.diem ? 'đ.' + c.diem : ''} ${c.khoan ? 'k.' + c.khoan : ''} ${c.dieu ? 'Đ.' + c.dieu : ''} ${c.vanBan || ''}`.trim()
             ).join('; ');
         }
+
+        // --- FIREBASE DATA FUNCTIONS (ĐÃ CHỈNH SỬA PHẦN PHÂN QUYỀN) ---
+
+        /**
+         * HÀM QUAN TRỌNG: Tải và lọc dữ liệu đơn dựa trên vai trò người dùng.
+         * Đã chỉnh sửa để CHỈ super_admin được thấy TẤT CẢ.
+         */
+        function updateTable() {
+            if (!currentUser) return;
+
+            const donRef = database.ref('don');
+            let query;
+
+            if (currentUser.role === 'super_admin') {
+                // 1. TÀI KHOẢN CAO NHẤT ('super_admin'): Tải TẤT CẢ dữ liệu
+                // Không dùng orderByChild() để đảm bảo tải toàn bộ.
+                query = donRef; 
+                console.log("Super_Admin: Tải toàn bộ dữ liệu.");
+            } else if (currentUser.unit) {
+                // 2. CÁC TÀI KHOẢN KHÁC (admin, manager_TP, user_TP, manager_KV, user_KV): 
+                // Chỉ tải dữ liệu của đơn vị mình. Lọc theo trường 'don_vi_xu_ly'.
+                query = donRef.orderByChild('don_vi_xu_ly').equalTo(currentUser.unit);
+                console.log(`Tài khoản ${currentUser.username} (${currentUser.role}) đang tải dữ liệu lọc theo đơn vị: ${currentUser.unit}`);
+            } else {
+                // Trường hợp tài khoản con nhưng thiếu thông tin đơn vị 
+                console.error("Lỗi phân quyền: Không tìm thấy đơn vị của tài khoản.");
+                document.getElementById('don-body').innerHTML = '<tr><td colspan="8">Không thể tải dữ liệu. Tài khoản thiếu thông tin đơn vị.</td></tr>';
+                return;
+            }
+
+            // Thực hiện lắng nghe dữ liệu
+            query.on('value', (snapshot) => {
+                const donList = [];
+                snapshot.forEach((childSnapshot) => {
+                    const don = childSnapshot.val();
+                    don.id = childSnapshot.key;
+                    donList.push(don);
+                });
+
+                dons = donList; // Cập nhật biến toàn cục
+                displayDonList(dons); // Hiển thị dữ liệu lên bảng
+            }, (error) => {
+                console.error("Lỗi khi tải dữ liệu đơn: ", error);
+                document.getElementById('don-body').innerHTML = `<tr><td colspan="8">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
+            });
+        }
+
+        /**
+         * HÀM QUAN TRỌNG: Nhập đơn mới/Chỉnh sửa đơn.
+         * Đảm bảo lưu trường 'don_vi_xu_ly'
+         */
+        function saveDon() {
+            if (!currentUser) {
+                alert('Vui lòng đăng nhập trước.');
+                return;
+            }
+            const id = document.getElementById('edit-id').value;
+            const canCuArray = getCanCuData(); 
+            const ngayNhan = document.getElementById('ngay_nhan').value;
+            const hoTen = document.getElementById('ho_ten').value;
+
+            if (!ngayNhan || !hoTen) {
+                alert('Vui lòng nhập đầy đủ Ngày nhận đơn và Họ tên/Cơ quan/Tổ chức.');
+                return;
+            }
+
+            const donData = {
+                ngay_nhan: ngayNhan,
+                nguon_don: document.getElementById('nguon_don').value,
+                ho_ten: hoTen,
+                dia_chi: document.getElementById('dia_chi').value,
+                ngay_ghi: document.getElementById('ngay_ghi').value,
+                phan_loai: document.getElementById('phan_loai').value,
+                tham_quyen: document.getElementById('tham_quyen').value,
+                can_bo_phan_cong: document.getElementById('can_bo_phan_cong').value,
+                chuc_danh: document.getElementById('chuc_danh').value,
+                chuyen_den: document.getElementById('chuyen_den').value,
+                ngay_chuyen_don: document.getElementById('ngay_chuyen_don').value,
+                noi_dung: document.getElementById('noi_dung').value,
+                de_xuat: document.getElementById('de_xuat').value,
+                ket_qua: document.getElementById('ket_qua').value,
+                can_cu: canCuArray,
+                // THÊM TRƯỜNG PHÂN QUYỀN: Bắt buộc phải có unit để tài khoản con có thể lọc được
+                don_vi_xu_ly: currentUser.unit, 
+            };
+
+            if (id) {
+                // Chỉnh sửa đơn
+                database.ref('don/' + id).update(donData)
+                    .then(() => {
+                        alert('Cập nhật đơn thành công!');
+                        clearForm();
+                    })
+                    .catch(error => {
+                        alert('Lỗi khi cập nhật đơn: ' + error.message);
+                    });
+            } else {
+                // Nhập đơn mới
+                database.ref('don').push(donData)
+                    .then(() => {
+                        alert('Nhập đơn thành công!');
+                        clearForm();
+                    })
+                    .catch(error => {
+                        alert('Lỗi khi nhập đơn: ' + error.message);
+                    });
+            }
+        }
+
+        function clearForm() {
+            // Xóa nội dung form nhập liệu
+            document.getElementById('edit-id').value = '';
+            document.getElementById('ngay_nhan').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('nguon_don').value = '';
+            document.getElementById('ho_ten').value = '';
+            document.getElementById('dia_chi').value = '';
+            document.getElementById('ngay_ghi').value = '';
+            document.getElementById('phan_loai').value = 'Khiếu nại';
+            document.getElementById('tham_quyen').value = 'Chọn';
+            document.getElementById('can_bo_phan_cong').value = currentUser ? currentUser.username : ''; // Giữ lại tên đăng nhập
+            document.getElementById('chuc_danh').value = 'Chọn';
+            document.getElementById('chuyen_den').value = '';
+            document.getElementById('ngay_chuyen_don').value = '';
+            document.getElementById('noi_dung').value = '';
+            document.getElementById('de_xuat').value = '';
+            document.getElementById('ket_qua').value = '';
+            
+            // Xóa căn cứ và thêm lại một dòng trống
+            populateCanCuFields([], ''); 
+            
+            capNhatThamQuyenMacDinh();
+        }
+
+        function editDon(id) {
+            const don = dons.find(d => d.id === id);
+            if (!don) {
+                alert('Không tìm thấy đơn để chỉnh sửa.');
+                return;
+            }
+            
+            // Đổ dữ liệu vào Modal sửa đổi
+            document.getElementById('sua-ngay_nhan').value = don.ngay_nhan || '';
+            document.getElementById('sua-nguon_don').value = don.nguon_don || '';
+            document.getElementById('sua-ho_ten').value = don.ho_ten || '';
+            document.getElementById('sua-dia_chi').value = don.dia_chi || '';
+            document.getElementById('sua-ngay_ghi').value = don.ngay_ghi || '';
+            document.getElementById('sua-phan_loai').value = don.phan_loai || 'Chọn';
+            document.getElementById('sua-tham_quyen').value = don.tham_quyen || 'Chọn';
+            document.getElementById('sua-can_bo_phan_cong').value = don.can_bo_phan_cong || '';
+            document.getElementById('sua-chuc_danh').value = don.chuc_danh || 'Chọn';
+            document.getElementById('sua-chuyen_den').value = don.chuyen_den || ''; 
+            document.getElementById('sua-ngay_chuyen_don').value = don.ngay_chuyen_don || '';
+            populateCanCuFields(don.can_cu, 'sua-');
+            document.getElementById('sua-noi_dung').value = don.noi_dung || '';
+            document.getElementById('sua-de_xuat').value = don.de_xuat || '';
+            document.getElementById('sua-ket_qua').value = don.ket_qua || '';
+            
+            document.getElementById('editModal').style.display = 'flex';
+
+            let editIdModal = document.getElementById('edit-id-modal');
+            if (!editIdModal) {
+                editIdModal = document.createElement('input');
+                editIdModal.type = 'hidden';
+                editIdModal.id = 'edit-id-modal';
+                document.querySelector('.modal-content.large-modal').appendChild(editIdModal);
+            }
+            editIdModal.value = id;
+        }
+
+
+        function updateDon() {
+            if (!currentUser) {
+                alert('Vui lòng đăng nhập trước.');
+                return;
+            }
+            const id = document.getElementById('edit-id-modal').value;
+            const canCuArray = getCanCuData('sua-'); 
+
+            if (!id) {
+                alert('Lỗi: Không tìm thấy ID đơn để cập nhật.');
+                return;
+            }
+
+            const donData = {
+                ngay_nhan: document.getElementById('sua-ngay_nhan').value,
+                nguon_don: document.getElementById('sua-nguon_don').value,
+                ho_ten: document.getElementById('sua-ho_ten').value,
+                dia_chi: document.getElementById('sua-dia_chi').value,
+                ngay_ghi: document.getElementById('sua-ngay_ghi').value,
+                phan_loai: document.getElementById('sua-phan_loai').value,
+                tham_quyen: document.getElementById('sua-tham_quyen').value,
+                can_bo_phan_cong: document.getElementById('sua-can_bo_phan_cong').value,
+                chuc_danh: document.getElementById('sua-chuc_danh').value,
+                chuyen_den: document.getElementById('sua-chuyen_den').value,
+                ngay_chuyen_don: document.getElementById('sua-ngay_chuyen_don').value,
+                noi_dung: document.getElementById('sua-noi_dung').value,
+                de_xuat: document.getElementById('sua-de_xuat').value,
+                ket_qua: document.getElementById('sua-ket_qua').value,
+                can_cu: canCuArray,
+            };
+
+            // Lấy đơn vị hiện tại của đơn để đảm bảo không bị ghi đè (ĐỂ DUY TRÌ PHÂN QUYỀN)
+            const existingDon = dons.find(d => d.id === id);
+            if (existingDon && existingDon.don_vi_xu_ly) {
+                donData.don_vi_xu_ly = existingDon.don_vi_xu_ly;
+            } else {
+                 // Nếu không có, gán mặc định bằng đơn vị của người đang đăng nhập
+                 donData.don_vi_xu_ly = currentUser.unit;
+            }
+
+            database.ref('don/' + id).update(donData)
+                .then(() => {
+                    alert('Cập nhật đơn thành công!');
+                    document.getElementById('editModal').style.display = 'none';
+                })
+                .catch(error => {
+                    alert('Lỗi khi cập nhật đơn: ' + error.message);
+                });
+        }
+
+        function deleteDon(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa đơn này không?')) {
+                database.ref('don/' + id).remove()
+                    .then(() => {
+                        alert('Xóa đơn thành công!');
+                    })
+                    .catch(error => {
+                        alert('Lỗi khi xóa đơn: ' + error.message);
+                    });
+            }
+        }
         
+        // CÁC HÀM KHÁC (GIỮ NGUYÊN)
         function exportList() { /* ... code ... */ }
         function exportReport() { /* ... code ... */ }
         function downloadJSON() { /* ... code ... */ }
@@ -1377,8 +1338,11 @@
             initializeDefaultAccounts(); // Đảm bảo có tài khoản mặc định
             initSelectOptions();
             document.getElementById("ngay_nhan").value = new Date().toISOString().slice(0, 10);
-            document.getElementById('new-role').onchange = capNhatDonViTheoVaiTro;
+            
+            // SỬA LỖI TYPO ĐĂNG NHẬP Ở ĐÂY
+            document.getElementById('new-role').onchange = capNhatDonViTheoVaiTro; 
             capNhatDonViTheoVaiTro();
+            
             populateCanCuFields([], '');
             populateCanCuFields([], 'sua-');
             
