@@ -1101,7 +1101,7 @@
         function updateTable() {
             if (!currentUser) return;
 
-            const donRef = database.ref('don');
+            const donRef = database.ref('accounts/don');
             let query;
 
             if (currentUser.role === 'super_admin') {
@@ -1179,7 +1179,7 @@
 
             if (id) {
                 // Chỉnh sửa đơn
-                database.ref('don/' + id).update(donData)
+                database.ref('accounts/don/' + id).update(donData)
                     .then(() => {
                         alert('Cập nhật đơn thành công!');
                         clearForm();
@@ -1189,7 +1189,7 @@
                     });
             } else {
                 // Nhập đơn mới
-                database.ref('don').push(donData)
+                database.ref('accounts/don').push(donData)
                     .then(() => {
                         alert('Nhập đơn thành công!');
                         clearForm();
@@ -1301,7 +1301,7 @@
                  donData.don_vi_xu_ly = currentUser.unit;
             }
 
-            database.ref('don/' + id).update(donData)
+            database.ref('accounts/don/' + id).update(donData)
                 .then(() => {
                     alert('Cập nhật đơn thành công!');
                     document.getElementById('editModal').style.display = 'none';
@@ -1313,7 +1313,7 @@
 
         function deleteDon(id) {
             if (confirm('Bạn có chắc chắn muốn xóa đơn này không?')) {
-                database.ref('don/' + id).remove()
+                database.ref('accounts/don/' + id).remove()
                     .then(() => {
                         alert('Xóa đơn thành công!');
                     })
