@@ -378,7 +378,7 @@
     <div id="main-container">
         <div class="main-content">
             <div class="sidebar">
-                <h2>Lưu đơn mới</h2>
+                <h2>Nhập đơn mới</h2>
                 <div class="form-section">
                     <div class="form-group">
                         <label for="ngay_nhan">Ngày nhận đơn:</label>
@@ -472,7 +472,7 @@
                     <textarea id="ket_qua"></textarea>
                 </div>
                 <input type="hidden" id="edit-id">
-                <button onclick="saveDon()">Lưu đơn</button>
+                <button onclick="saveDon()">Xong</button>
             </div>
 
             <div class="main-panel">
@@ -1139,7 +1139,7 @@
         }
 
         /**
-         * HÀM QUAN TRỌNG: Lưu đơn mới/Chỉnh sửa đơn.
+         * HÀM QUAN TRỌNG: Nhập đơn mới/Chỉnh sửa đơn.
          * Đảm bảo lưu trường 'don_vi_xu_ly'
          */
         function saveDon() {
@@ -1188,14 +1188,14 @@
                         alert('Lỗi khi cập nhật đơn: ' + error.message);
                     });
             } else {
-                // Lưu đơn mới
+                // Nhập đơn mới
                 database.ref('don').push(donData)
                     .then(() => {
-                        alert('Lưu đơn thành công!');
+                        alert('Nhập đơn thành công!');
                         clearForm();
                     })
                     .catch(error => {
-                        alert('Lỗi khi lưu đơn: ' + error.message);
+                        alert('Lỗi khi nhập đơn: ' + error.message);
                     });
             }
         }
