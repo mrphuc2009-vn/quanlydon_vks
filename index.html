@@ -1096,46 +1096,61 @@
 
         /**
          * HÀM QUAN TRỌNG: Tải và lọc dữ liệu đơn dựa trên vai trò người dùng.
-         * Đã chỉnh sửa để CHỈ super_admin được thấy TẤT CẢ.
+         * Đã chỉnh sửa để super_admin tải từ CẢ hai đường dẫn cũ và mới.
          */
-        function updateTable() {
+        async function updateTable() {
             if (!currentUser) return;
 
-            const donRef = database.ref('accounts/don');
-            let query;
+            // Đường dẫn mới và đúng theo cấu trúc Firebase của bạn
+            const donRefMoi = database.ref('accounts/don'); 
+            let donList = [];
 
             if (currentUser.role === 'super_admin') {
-                // 1. TÀI KHOẢN CAO NHẤT ('super_admin'): Tải TẤT CẢ dữ liệu
-                // Không dùng orderByChild() để đảm bảo tải toàn bộ.
-                query = donRef; 
-                console.log("Super_Admin: Tải toàn bộ dữ liệu.");
-            } else if (currentUser.unit) {
-                // 2. CÁC TÀI KHOẢN KHÁC (admin, manager_TP, user_TP, manager_KV, user_KV): 
-                // Chỉ tải dữ liệu của đơn vị mình. Lọc theo trường 'don_vi_xu_ly'.
-                query = donRef.orderByChild('don_vi_xu_ly').equalTo(currentUser.unit);
-                console.log(`Tài khoản ${currentUser.username} (${currentUser.role}) đang tải dữ liệu lọc theo đơn vị: ${currentUser.unit}`);
-            } else {
-                // Trường hợp tài khoản con nhưng thiếu thông tin đơn vị 
-                console.error("Lỗi phân quyền: Không tìm thấy đơn vị của tài khoản.");
-                document.getElementById('don-body').innerHTML = '<tr><td colspan="8">Không thể tải dữ liệu. Tài khoản thiếu thông tin đơn vị.</td></tr>';
-                return;
-            }
-
-            // Thực hiện lắng nghe dữ liệu
-            query.on('value', (snapshot) => {
-                const donList = [];
-                snapshot.forEach((childSnapshot) => {
+                console.log("Super_Admin: Tải toàn bộ dữ liệu từ cả đường dẫn cũ và mới.");
+                
+                // 1. Tải dữ liệu từ đường dẫn cũ (don)
+                const donRefCu = database.ref('don');
+                const snapshotCu = await donRefCu.once('value');
+                snapshotCu.forEach((childSnapshot) => {
                     const don = childSnapshot.val();
                     don.id = childSnapshot.key;
                     donList.push(don);
                 });
-
+                
+                // 2. Tải dữ liệu từ đường dẫn mới (accounts/don)
+                const snapshotMoi = await donRefMoi.once('value');
+                snapshotMoi.forEach((childSnapshot) => {
+                    const don = childSnapshot.val();
+                    don.id = childSnapshot.key;
+                    donList.push(don);
+                });
+                
                 dons = donList; // Cập nhật biến toàn cục
                 displayDonList(dons); // Hiển thị dữ liệu lên bảng
-            }, (error) => {
-                console.error("Lỗi khi tải dữ liệu đơn: ", error);
-                document.getElementById('don-body').innerHTML = `<tr><td colspan="8">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
-            });
+                
+            } else if (currentUser.unit) {
+                // CÁC TÀI KHOẢN KHÁC: Chỉ tải dữ liệu của đơn vị mình TẠI ĐƯỜNG DẪN MỚI.
+                const query = donRefMoi.orderByChild('don_vi_xu_ly').equalTo(currentUser.unit);
+                console.log(`Tài khoản ${currentUser.username} (${currentUser.role}) đang tải dữ liệu lọc theo đơn vị: ${currentUser.unit}`);
+                
+                query.on('value', (snapshot) => {
+                    donList = [];
+                    snapshot.forEach((childSnapshot) => {
+                        const don = childSnapshot.val();
+                        don.id = childSnapshot.key;
+                        donList.push(don);
+                    });
+                    dons = donList;
+                    displayDonList(dons); 
+                }, (error) => {
+                    console.error("Lỗi khi tải dữ liệu đơn: ", error);
+                    document.getElementById('don-body').innerHTML = `<tr><td colspan="8">Lỗi khi tải dữ liệu: ${error.message}</td></tr>`;
+                });
+
+            } else {
+                console.error("Lỗi phân quyền: Không tìm thấy đơn vị của tài khoản.");
+                document.getElementById('don-body').innerHTML = '<tr><td colspan="8">Không thể tải dữ liệu. Tài khoản thiếu thông tin đơn vị.</td></tr>';
+            }
         }
 
         /**
