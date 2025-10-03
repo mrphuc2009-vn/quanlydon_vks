@@ -1139,7 +1139,7 @@
         }
 
         /**
-         * HÀM QUAN TRỌNG: Lưu đơn mới/Chỉnh sửa đơn.
+         * HÀM QUAN TRỌNG: Nhập đơn mới/Chỉnh sửa đơn.
          * Đảm bảo lưu trường 'don_vi_xu_ly'
          */
         function saveDon() {
@@ -1188,14 +1188,14 @@
                         alert('Lỗi khi cập nhật đơn: ' + error.message);
                     });
             } else {
-                // Lưu đơn mới
+                // Nhập đơn mới
                 database.ref('don').push(donData)
                     .then(() => {
-                        alert('Lưu đơn thành công!');
+                        alert('Nhập đơn thành công!');
                         clearForm();
                     })
                     .catch(error => {
-                        alert('Lỗi khi lưu đơn: ' + error.message);
+                        alert('Lỗi khi nhập đơn: ' + error.message);
                     });
             }
         }
