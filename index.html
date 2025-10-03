@@ -520,7 +520,6 @@
                 <div class="form-group">
                     <label for="new-role">Vai trò:</label>
                     <select id="new-role" onchange="capNhatDonViTheoVaiTro()">
-                        <option value="admin">Quản trị viên (admin)</option>
                         <option value="super_admin">Quản trị viên cấp cao (super_admin)</option>
                         <option value="manager_TP">Quản lý cấp Thành phố</option>
                         <option value="user_TP">Người dùng cấp Thành phố</option>
@@ -811,7 +810,7 @@
             database.ref('accounts').once('value').then(snapshot => { 
                 if (!snapshot.exists()) { 
                     const defaultAccounts = { 
-                        "superadmin": { "password": "123", "role": "super_admin", "unit": "TT-KT" }, 
+                        "superadmin": { "password": "123456", "role": "super_admin", "unit": "TT-KT" }, 
                         "adminct": { "password": "123", "role": "admin", "unit": "TT-KT" }, 
                         "userKV1": { "password": "123", "role": "user_KV", "unit": "VKSND KV1" } 
                         // Bạn có thể thêm các tài khoản mặc định khác nếu cần
