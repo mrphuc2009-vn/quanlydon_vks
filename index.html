@@ -716,34 +716,48 @@
         };
         
         // --- AUTHENTICATION FUNCTIONS ---
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-            database.ref('accounts').once('value')
-                .then(snapshot => {
-                    const accounts = snapshot.val() || {};
-                    if (accounts[username] && accounts[username].password === password) {
-                        currentUser = { username: username, role: accounts[username].role, unit: accounts[username].unit };
-                        document.getElementById('login-container').style.display = 'none';
-                        document.getElementById('main-container').style.display = 'flex';
-                        document.getElementById('can_bo_phan_cong').value = currentUser.username;
-                        
-                        if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
-                            document.getElementById('account-btn').style.display = 'block';
-                        } else {
-                            document.getElementById('account-btn').style.display = 'none';
-                        }
-                        
-                        updateTable();
-                    } else {
-                        alert('Tên đăng nhập hoặc mật khẩu không đúng!');
-                    }
-                })
-                .catch(error => {
-                    alert('Lỗi khi đăng nhập: ' + error.message);
-                });
-        }
+    // Sửa: Dùng username để truy vấn CƠ SỞ DỮ LIỆU
+    database.ref('accounts/' + username).once('value')
+        .then(snapshot => {
+            const accountData = snapshot.val();
+            
+            // 1. Kiểm tra tài khoản có tồn tại và mật khẩu có khớp không
+            if (accountData && accountData.password === password) {
+                // Tài khoản hợp lệ, lưu thông tin
+                currentUser = { 
+                    username: username, 
+                    role: accountData.role, 
+                    unit: accountData.unit 
+                };
+                
+                // 2. Cập nhật giao diện
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'flex';
+                document.getElementById('can_bo_phan_cong').value = currentUser.username;
+                
+                // 3. Phân quyền hiển thị nút Quản lý
+                if (currentUser.role === 'admin' || currentUser.role === 'super_admin') {
+                    document.getElementById('account-btn').style.display = 'block';
+                } else {
+                    document.getElementById('account-btn').style.display = 'none';
+                }
+                
+                // 4. Lập tức tải dữ liệu ĐƠN đã được lọc
+                updateTable(); 
+            } else {
+                alert('Tên đăng nhập hoặc mật khẩu không đúng!');
+            }
+        })
+        .catch(error => {
+            // Lỗi này có thể xảy ra nếu Rules chặn đọc ngay cả nút accounts/username
+            // Tuy nhiên, vì code chỉ đọc 1 nút con, Rules của bạn đã cho phép điều này.
+            alert('Lỗi khi đăng nhập: ' + error.message);
+        });
+}
         function logout() {
             currentUser = null;
             document.getElementById('login-container').style.display = 'flex';
@@ -981,48 +995,64 @@
             currentSelectedId = null; // Clear selected ID
         }
         function saveDon() {
-            if (!currentUser) {
-                alert('Vui lòng đăng nhập để lưu đơn.');
-                return;
-            }
-            if (!document.getElementById('ho_ten').value || !document.getElementById('noi_dung').value) {
-                alert('Vui lòng nhập Họ tên và Nội dung đơn.');
-                return;
-            }
+    if (!currentUser) {
+        alert('Vui lòng đăng nhập để lưu đơn.');
+        return;
+    }
+    if (!document.getElementById('ho_ten').value || !document.getElementById('noi_dung').value) {
+        alert('Vui lòng nhập Họ tên và Nội dung đơn.');
+        return;
+    }
+    
+    const id = document.getElementById('edit-id').value;
+    const isNew = !id; // Xác định đây là đơn mới hay đơn cập nhật
 
-            const id = document.getElementById('edit-id').value;
-            const don = {
-                ngay_nhan: document.getElementById('ngay_nhan').value,
-                nguon_don: document.getElementById('nguon_don').value,
-                ho_ten: document.getElementById('ho_ten').value,
-                dia_chi: document.getElementById('dia_chi').value,
-                ngay_ghi: document.getElementById('ngay_ghi').value,
-                phan_loai: document.getElementById('phan_loai').value,
-                tham_quyen: document.getElementById('tham_quyen').value,
-                can_bo_phan_cong: document.getElementById('can_bo_phan_cong').value,
-                chuc_danh: document.getElementById('chuc_danh').value,
-                chuyen_den: document.getElementById('chuyen_den').value,
-                ngay_chuyen_don: document.getElementById('ngay_chuyen_don').value,
-                can_cu: getCanCuData(),
-                noi_dung: document.getElementById('noi_dung').value,
-                de_xuat: document.getElementById('de_xuat').value,
-                ket_qua: document.getElementById('ket_qua').value,
-                lastUpdatedBy: currentUser.username,
-                lastUpdated: new Date().toISOString()
-            };
+    const don = {
+        ngay_nhan: document.getElementById('ngay_nhan').value,
+        nguon_don: document.getElementById('nguon_don').value,
+        ho_ten: document.getElementById('ho_ten').value,
+        dia_chi: document.getElementById('dia_chi').value,
+        ngay_ghi: document.getElementById('ngay_ghi').value,
+        phan_loai: document.getElementById('phan_loai').value,
+        tham_quyen: document.getElementById('tham_quyen').value,
+        can_bo_phan_cong: document.getElementById('can_bo_phan_cong').value,
+        chuc_danh: document.getElementById('chuc_danh').value,
+        chuyen_den: document.getElementById('chuyen_den').value,
+        ngay_chuyen_don: document.getElementById('ngay_chuyen_don').value,
+        can_cu: getCanCuData(),
+        noi_dung: document.getElementById('noi_dung').value,
+        de_xuat: document.getElementById('de_xuat').value,
+        ket_qua: document.getElementById('ket_qua').value,
+        lastUpdatedBy: currentUser.username,
+        lastUpdated: new Date().toISOString()
+        // KHÔNG THAY ĐỔI nguoi_tao_uid nếu là cập nhật
+        ...(isNew ? { nguoi_tao_uid: currentUser.username } : {}) 
+    };
+    
+    // Nếu là đơn mới, thêm trường nguoi_tao_uid
+    if (isNew) {
+        don.nguoi_tao_uid = currentUser.username;
+    }
+    
+    // Nếu là đơn cũ, ta cần đảm bảo ta có quyền sửa
+    if (id) {
+        // Kiểm tra quyền (Nếu cần, nhưng Rules đã lo việc này)
+        // Hiện tại không cần kiểm tra lại, Rules sẽ chặn nếu không đúng quyền
+    }
 
-            const ref = id ? database.ref('dons/' + id) : database.ref('dons').push();
-
-            ref.set(don)
-                .then(() => {
-                    alert(id ? 'Cập nhật đơn thành công!' : 'Lưu đơn thành công!');
-                    clearForm();
-                    updateTable();
-                })
-                .catch(error => {
-                    alert('Lỗi khi lưu đơn: ' + error.message);
-                });
-        }
+    const ref = id ? database.ref('don_khieu_to/' + id) : database.ref('don_khieu_to').push();
+    
+    // Sửa đường dẫn từ 'dons' thành 'don_khieu_to' (theo Rules đã gửi)
+    ref.set(don)
+        .then(() => {
+            alert(id ? 'Cập nhật đơn thành công!' : 'Lưu đơn thành công!');
+            clearForm();
+            // Lệnh gọi updateTable() sẽ tải lại dữ liệu đã được lọc
+        })
+        .catch(error => {
+            alert('Lỗi khi lưu đơn. Vui lòng kiểm tra quyền hạn của bạn. Lỗi: ' + error.message);
+        });
+}
         function populateForm(don) {
             document.getElementById('ngay_nhan').value = don.ngay_nhan || '';
             document.getElementById('nguon_don').value = don.nguon_don || '';
@@ -1747,22 +1777,67 @@
         
         // --- CÁC HÀM TIỆN ÍCH KHÁC (GIẢ ĐỊNH) ---
 
-        function updateTable() {
-            database.ref('dons').once('value')
-                .then(snapshot => {
-                    dons = [];
-                    snapshot.forEach(childSnapshot => {
-                        const don = childSnapshot.val();
-                        don.id = childSnapshot.key;
-                        dons.push(don);
-                    });
-                    displayDons(dons);
-                })
-                .catch(error => {
-                    console.error("Lỗi tải dữ liệu đơn:", error);
-                });
+        // Hàm mới để tải dữ liệu, cần được gọi SAU KHI đăng nhập
+function updateTable() {
+    if (!currentUser) {
+        return; 
+    }
+    
+    // 1. Khởi tạo Firebase Reference
+    let ref = database.ref('don_khieu_to');
+
+    // 2. Áp dụng BỘ LỌC (Query) dựa trên vai trò
+    // Nếu người dùng KHÔNG phải là admin/super_admin, chỉ truy vấn đơn của họ
+    if (currentUser.role !== 'admin' && currentUser.role !== 'super_admin') {
+        // Sửa: Lọc dữ liệu theo tên đăng nhập (nguoi_tao_uid)
+        ref = ref.orderByChild('nguoi_tao_uid').equalTo(currentUser.username);
+    } 
+    
+    // 3. Gắn listener để tải dữ liệu (sẽ chỉ nhận dữ liệu đã được Rules cho phép)
+    ref.on('value', (snapshot) => {
+        const duLieu = snapshot.val();
+        dons = [];
+        
+        // Chuyển dữ liệu từ đối tượng JSON sang mảng để hiển thị
+        if (duLieu) {
+            for (const id in duLieu) {
+                // Kiểm tra lại lần cuối: Chỉ thêm vào mảng nếu Rules cho phép (mặc dù query đã lọc)
+                if (currentUser.role === 'admin' || currentUser.role === 'super_admin' || duLieu[id].nguoi_tao_uid === currentUser.username) {
+                    dons.push({ id: id, ...duLieu[id] });
+                }
+            }
         }
 
+        // Sắp xếp theo ngày nhận đơn mới nhất
+        dons.sort((a, b) => new Date(b.ngay_nhan) - new Date(a.ngay_nhan));
+        
+        const tableBody = document.getElementById('don-body');
+        tableBody.innerHTML = ''; // Xóa dữ liệu cũ
+        
+        // Hiển thị dữ liệu mới đã được lọc
+        dons.forEach((don, index) => {
+            const row = tableBody.insertRow();
+            // ... (Phần code tạo hàng table hiển thị dữ liệu của bạn)
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${formatDateToInput(don.ngay_nhan)}</td>
+                <td>${don.ho_ten}</td>
+                <td onclick="editDon('${don.id}')" style="cursor:pointer; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${don.noi_dung}">${don.noi_dung}</td>
+                <td>${don.phan_loai || ''}</td>
+                <td>${don.tham_quyen || ''}</td>
+                <td style="white-space: pre-wrap;">${don.ket_qua || ''}</td>
+                <td class="table-actions">
+                    <button class="edit-btn" onclick="editDon('${don.id}')">Sửa</button>
+                    <button class="delete-btn" onclick="deleteDon('${don.id}')">Xóa</button>
+                </td>
+            `;
+        });
+    }, (error) => {
+        // Thông báo lỗi nếu Rules chặn truy cập hoàn toàn (Lỗi này hiếm xảy ra sau khi fix)
+        console.error("Lỗi khi tải dữ liệu: ", error);
+        alert('Lỗi tải dữ liệu. Vui lòng kiểm tra lại Rules Firebase.');
+    });
+}
         function displayDons(donList) {
             const tableBody = document.getElementById('don-body');
             tableBody.innerHTML = '';
