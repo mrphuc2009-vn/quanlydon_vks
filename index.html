@@ -1347,7 +1347,7 @@
 
     <div style="clear: both; height: 10px;"></div>
     
-    <p class="title">PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN</p>
+    <p class="title">Phiếu Đề xuất xử lý đơn</p>
     
     <div class="kinh-gui-container">
         <p style="font-weight: bold;">Kính gửi:</p>
@@ -1399,8 +1399,8 @@
 </body>
 </html>`;
 
-            // 3. Save as .doc
-            const filename = `PHIẾU ĐỀ XUẤT XỬ LÝ ĐƠN ${don.ho_ten}.doc`;
+            // 3. Save as .docx
+            const filename = `Phiếu đè xuất xử lý đơn ${don.ho_ten}.doc`;
             const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword;charset=utf-8' });
             saveAs(blob, filename);
         }
