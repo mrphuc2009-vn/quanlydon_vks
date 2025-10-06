@@ -80,7 +80,7 @@
         #login-container button {
             width: 100%;
             padding: 12px;
-            background-color: #004d40;
+            background-color: #3d1eec;
             color: white;
             border: none;
             border-radius: 5px;
@@ -89,7 +89,7 @@
         }
         
         #login-container button:hover {
-            background-color: #00332b;
+            background-color: #2b37e4;
         }
 
         #main-container {
@@ -540,6 +540,12 @@
             <button onclick="createAccount()">Tạo tài khoản</button>
             <h4>Danh sách tài khoản</h4>
             <ul id="account-list"></ul>
+        <div class="search-bar" style="margin-bottom: 20px;">
+                <input type="text" id="search-text" placeholder="Tìm kiếm theo Họ tên/Cơ quan/Tổ chức..." style="padding: 8px; width: 40%; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="date" id="search-date" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <button class="search-btn" onclick="filterTable()">Tìm Kiếm</button>
+                <button class="reset-btn" onclick="resetFilter()">Xóa Bộ Lọc</button>
+        </div>
         </div>
     </div>
 
@@ -668,10 +674,9 @@
             </div>
         </div>
     </div>
-
+           
     <script>
-        // --- 1. FIREBASE CONFIGURATION & INITIALIZATION (PHẢI THAY THẾ) ---
-        // THAY THẾ CHỖ NÀY BẰNG CẤU HÌNH CỦA BẠN
+      
         const firebaseConfig = {
             apiKey: "AIzaSyBvhrOBoJc9-gKuTAXDlPknVdxKecgPH_g",
             authDomain: "quanlydonvks-d7ff9.firebaseapp.com",
